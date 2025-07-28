@@ -78,32 +78,36 @@ Automating financial transactions without explicit, real-time user confirmation 
 
 ### Installation
 
-```
+```bash
 pip install Flask selenium
-
 ```
 
 ### Save Session Cookies (First Run Only)
 
-Run the `save_cookies.py` script. This will open a Chrome browser instance, allowing you to manually log into your e-commerce account. Once logged in, the script will save your session cookies to `cookies.pkl`.
+To enable persistent login, you must first generate and store session cookies.
+Run the `save_cookies.py` script. This will open a Chrome browser instance, allowing you to manually log into your e-commerce account. **This step is required only for the very first run.** Once logged in, the script will save your session cookies to `cookies.pkl`.
 
-```
+```bash
 python save_cookies.py
-
 ```
 
 ### Run the Flask Application
 
-Start the main Flask application.
+Before running, open the `app.py` file and locate the line `upi_input.send_keys("<Enter your UPI id here>")`. **Replace `<Enter your UPI id here>` with your actual UPI ID.**
 
-```
+Start the main Flask application:
+
+```bash
 python app.py
-
 ```
 
 ### Access the Web Interface
 
-Open your web browser and navigate to `http://127.0.0.1:5000/` (or the address shown in your terminal). You can then input your grocery list and initiate the automation.
+Open your web browser and navigate to `http://127.0.0.1:5000/` (or the address shown in your terminal).
+
+1.  **Enter your grocery list:** Type the names of the groceries or products you wish to purchase into the provided text area.
+2.  **Choose Headless Mode (Optional):** Check the "Run in Headless Mode" box if you want the automation to run in the background without a visible browser window. This is entirely optional and depends on your preference.
+3.  **Submit Order:** Click the "Submit and Order" button to initiate the automation process.
 
 ## 💡 Future Enhancements (Manual Implementation)
 
