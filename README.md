@@ -1,101 +1,124 @@
 # Green Shelf
 
-Table of Contents
-About Green Shelf
+## Table of Contents
 
-Features
+* [About Green Shelf](#about-green-shelf)
 
-Important Disclaimer
+* [Features](#features)
 
-Technologies Used
+* [Important Disclaimer](#important-disclaimer)
 
-Getting Started
+* [Technologies Used](#technologies-used)
 
-Prerequisites
+* [Getting Started](#getting-started)
 
-Installation
+  * [Prerequisites](#prerequisites)
 
-Save Session Cookies
+  * [Installation](#installation)
 
-Run the Flask Application
+  * [Save Session Cookies](#save-session-cookies)
 
-Access the Web Interface
+  * [Run the Flask Application](#run-the-flask-application)
 
-Future Enhancements
+  * [Access the Web Interface](#access-the-web-interface)
 
-Contributing
+* [Future Enhancements](#future-enhancements)
 
-License
+* [Contributing](#contributing)
 
-About Green Shelf
+* [License](#license)
+
+## About Green Shelf
+
 Green Shelf is a Python-based web application designed to streamline the initial steps of grocery shopping on an e-commerce platform. This system leverages Flask for a user-friendly web interface and Selenium for automating interactions with the website, focusing on efficient item search and cart addition.
 
-✨ Features
-Intuitive Web Interface (Flask): A simple and clean web form allows users to input their grocery list as plain text.
+## ✨ Features
 
-Persistent Login (Selenium & Cookies): Automates the login process by saving and loading session cookies (cookies.pkl), enabling quick access to your account on subsequent runs without manual re-login.
+* **Intuitive Web Interface (Flask):** A simple and clean web form allows users to input their grocery list as plain text.
 
-Automated Item Search & Cart Addition: For each item in your grocery list, the system automatically searches on the e-commerce website and adds the first matching product to your cart.
+* **Persistent Login (Selenium & Cookies):** Automates the login process by saving and loading session cookies (`cookies.pkl`), enabling quick access to your account on subsequent runs without manual re-login.
 
-Headless Browser Support: Option to run Selenium in headless mode, allowing the automation process to run in the background without a visible browser window.
+* **Automated Item Search & Cart Addition:** For each item in your grocery list, the system automatically searches on the e-commerce website and adds the first matching product to your cart.
 
-Modular & Clean Code: Structured into logical components (app.py, save_cookies.py) for clarity and maintainability.
+* **Headless Browser Support:** Option to run Selenium in headless mode, allowing the automation process to run in the background without a visible browser window.
 
-⚠️ Important Disclaimer: Designed for Partial Automation
-This project is developed for educational and illustrative purposes only.
+* **Modular & Clean Code:** Structured into logical components (`app.py`, `save_cookies.py`) for clarity and maintainability.
 
-For safety, ethical reasons, and to comply with website terms of service, this system explicitly does NOT automate the final checkout and order placement process. Users are required to manually review their cart, proceed through the payment gateway, and confirm their order directly on the e-commerce website.
+## ⚠️ Important Disclaimer: Designed for Partial Automation
+
+**This project is developed for educational and illustrative purposes only.**
+
+**For safety, ethical reasons, and to comply with website terms of service, this system explicitly does NOT automate the final checkout and order placement process.** Users are required to manually review their cart, proceed through the payment gateway, and confirm their order directly on the e-commerce website.
 
 Automating financial transactions without explicit, real-time user confirmation can lead to unintended purchases and significant security risks. This project aims to demonstrate web automation principles responsibly, focusing on convenience in the pre-checkout phase.
 
-🚀 Technologies Used
-Python 3: The core programming language.
+## 🚀 Technologies Used
 
-Flask: Lightweight web framework for the frontend.
+* **Python 3:** The core programming language.
 
-Selenium WebDriver: For browser automation.
+* **Flask:** Lightweight web framework for the frontend.
 
-ChromeDriver: The browser driver for Chrome.
+* **Selenium WebDriver:** For browser automation.
 
-pickle: Python module for serializing and deserializing Python object structures (used for saving cookies).
+* **ChromeDriver:** The browser driver for Chrome.
 
-🛠️ Getting Started
-Prerequisites
-Python 3 installed.
+* **`pickle`:** Python module for serializing and deserializing Python object structures (used for saving cookies).
 
-pip for package installation.
+## 🛠️ Getting Started
 
-Google Chrome browser installed.
+### Prerequisites
 
-Download ChromeDriver compatible with your Chrome version and place it in your system's PATH or specify its location in the code.
+* Python 3 installed.
 
-Installation
+* `pip` for package installation.
+
+* Google Chrome browser installed.
+
+* Download `ChromeDriver` compatible with your Chrome version and place it in your system's PATH or specify its location in the code.
+
+### Installation
+
+```
 pip install Flask selenium
 
-Save Session Cookies (First Run Only)
-Run the save_cookies.py script. This will open a Chrome browser instance, allowing you to manually log into your e-commerce account. Once logged in, the script will save your session cookies to cookies.pkl.
+```
 
+### Save Session Cookies (First Run Only)
+
+Run the `save_cookies.py` script. This will open a Chrome browser instance, allowing you to manually log into your e-commerce account. Once logged in, the script will save your session cookies to `cookies.pkl`.
+
+```
 python save_cookies.py
 
-Run the Flask Application
+```
+
+### Run the Flask Application
+
 Start the main Flask application.
 
+```
 python app.py
 
-Access the Web Interface
-Open your web browser and navigate to http://127.0.0.1:5000/ (or the address shown in your terminal). You can then input your grocery list and initiate the automation.
+```
 
-💡 Future Enhancements (Manual Implementation)
-Error Handling: More robust error handling for item not found, network issues, etc.
+### Access the Web Interface
 
-User Feedback: Better real-time feedback on the Flask UI about the automation progress.
+Open your web browser and navigate to `http://127.0.0.1:5000/` (or the address shown in your terminal). You can then input your grocery list and initiate the automation.
 
-Item Selection: Allow users to choose from multiple search results if the first one isn't desired.
+## 💡 Future Enhancements (Manual Implementation)
 
-Configuration: Externalize configurations (e.g., headless mode toggle) for easier management.
+* **Error Handling:** More robust error handling for item not found, network issues, etc.
 
-Contributing
+* **User Feedback:** Better real-time feedback on the Flask UI about the automation progress.
+
+* **Item Selection:** Allow users to choose from multiple search results if the first one isn't desired.
+
+* **Configuration:** Externalize configurations (e.g., headless mode toggle) for easier management.
+
+## Contributing
+
 Contributions are welcome! If you have suggestions for improvements or new features, please open an issue or submit a pull request.
 
-License
-This project is open-sourced under the MIT License. See the LICENSE file for more details.
+## License
+
+This project is open-sourced under the MIT License. See the `LICENSE` file for more details.
