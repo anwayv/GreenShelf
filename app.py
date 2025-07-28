@@ -81,21 +81,13 @@ def run_selenium_bot(grocery_list, headless=False):
                 driver.get(PRODUCT_LINKS[item])
                 time.sleep(3)
                 try:
-                    # Try standard "Add" button
-                    add_button = WebDriverWait(driver, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Add")]'))
+                    add_button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Add to cart") and @data-pf="reset"]'))
                     )
                     driver.execute_script("arguments[0].click();", add_button)
-                except Exception as e1:
-                    try:
-                        # Fallback to "Add to cart" button
-                        add_button = WebDriverWait(driver, 5).until(
-                            EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Add to cart")]'))
-                        )
-                        driver.execute_script("arguments[0].click();", add_button)
-                    except Exception as e2:
-                        print(f"Add button not found for {item}. Errors: {e1}, {e2}")
-                        continue
+                except Exception as e:
+                    print(f"Add button not found or failed for {item}: {e}")
+                    continue
                 print(f"Added {item} to cart via direct link.")
             else:
                 print(f"No direct link found for {item}.")
@@ -103,11 +95,14 @@ def run_selenium_bot(grocery_list, headless=False):
             print(f"Failed to add {item}: {e}")
         time.sleep(2)
 
-    # Proceed to cart and attempt checkout
+    # Open cart before proceeding to checkout
     try:
-        driver.get("https://www.blinkit.com/cart")
-        checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Checkout")]')))
-        checkout.click()
+        cart_icon = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "CartButton__CartIcon-sc-1fuy2nj-6")))
+        driver.execute_script("arguments[0].click();", cart_icon)
+        time.sleep(3)
+
+        checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Proceed To Pay")]/ancestor::button')))
+        driver.execute_script("arguments[0].click();", checkout)
         print("Checkout clicked.")
     except Exception as e:
         print(f"Failed at checkout: {e}")
