@@ -31,7 +31,29 @@ HTML_FORM = """
 PRODUCT_LINKS = {
     "amul milk 500ml": "https://blinkit.com/prn/amul-taaza-toned-milk/prid/19512",
     "gokul full cream milk": "https://blinkit.com/prn/gokul-full-cream-milk/prid/242693",
-    "english oven sandwich white bread": "https://blinkit.com/prn/english-oven-sandwich-white-bread/prid/18403"
+    "english oven sandwich white bread": "https://blinkit.com/prn/english-oven-sandwich-white-bread/prid/18403",
+    "amul gold full cream milk": "https://blinkit.com/prn/amul-gold-full-cream-milk/prid/12872",
+    "amul cow milk": "https://blinkit.com/prn/amul-cow-milk/prid/160704",
+    "Gokul Satvik Pasteurized Cow Milk": "https://blinkit.com/prn/gokul-satvik-pasteurized-cow-milk/prid/499615",
+    "Amul Taaza Homogenised Toned Milk": "https://blinkit.com/prn/amul-taaza-homogenised-toned-milk/prid/176",
+    "Amul Moti Toned Milk": "https://blinkit.com/prn/amul-moti-toned-milk-90-days-shelf-life/prid/34778",
+    "Mother Dairy Cow Milk": "https://blinkit.com/prn/mother-dairy-cow-milk/prid/339309",
+    "Amul Gold Milk": "https://blinkit.com/prn/amul-gold-milk/prid/179",
+    "Amul Lactose Free Milk": "https://blinkit.com/prn/amul-lactose-free-milk/prid/206314",
+    "Mother Dairy Toned Milk 500ml": "https://blinkit.com/prn/mother-dairy-toned-milk/prid/19925",
+    "Amul Taaza Toned Milk 200ml": "https://blinkit.com/prn/amul-taaza-toned-milk/prid/113945",
+    "Humpy Farms Cow A2 Milk": "https://blinkit.com/prn/humpy-farms-cow-a2-milk/prid/505525",
+    "Mother Dairy Toned Milk 1l": "https://blinkit.com/prn/mother-dairy-toned-milk/prid/32685",
+    "Amul Camel Milk": "https://blinkit.com/prn/amul-camel-milk/prid/427633",
+    "Amul Buffalo A2 Milk": "https://blinkit.com/prn/amul-buffalo-a2-milk/prid/522807",
+    "Gokul Taaza Pasteurized Toned Milk": "https://blinkit.com/prn/gokul-taaza-pasteurized-toned-milk/prid/499616",
+    "Britannia Brown Bread": "https://blinkit.com/prn/britannia-brown-bread/prid/15364",
+    "English Oven Brown Bread": "https://blinkit.com/prn/english-oven-brown-bread/prid/18396",
+    "English Oven Zero Maida Multigrain Bread": "https://blinkit.com/prn/english-oven-zero-maida-multigrain-bread/prid/18401",
+    "Modern White Bread": "https://blinkit.com/prn/modern-white-bread/prid/72209",
+    "Britannia Pav": "https://blinkit.com/prn/britannia-pav/prid/366180",
+    
+    
     # Add more items here as needed
 }
 
