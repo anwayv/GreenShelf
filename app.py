@@ -30,6 +30,8 @@ HTML_FORM = """
 # Load product-specific URLs from file (you can create/update this file)
 PRODUCT_LINKS = {
     "amul milk 500ml": "https://blinkit.com/prn/amul-taaza-toned-milk/prid/19512",
+    "gokul full cream milk": "https://blinkit.com/prn/gokul-full-cream-milk/prid/242693",
+    "english oven sandwich white bread": "https://blinkit.com/prn/english-oven-sandwich-white-bread/prid/18403"
     # Add more items here as needed
 }
 
@@ -101,7 +103,7 @@ def run_selenium_bot(grocery_list, headless=False):
         driver.execute_script("arguments[0].click();", cart_icon)
         time.sleep(3)
 
-        checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Proceed To Pay")]/ancestor::button')))
+        checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Proceed To Pay") and contains(@class, "CheckoutStrip__CTAText-sc-1fzbdhy-13")]')))
         driver.execute_script("arguments[0].click();", checkout)
         print("Checkout clicked.")
     except Exception as e:
