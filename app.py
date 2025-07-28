@@ -84,7 +84,7 @@ def run_selenium_bot(grocery_list, headless=False):
                 time.sleep(3)
                 try:
                     add_button = WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Add to cart") and @data-pf="reset"]'))
+                        EC.element_to_be_clickable((By.XPATH, '//div[@data-pf="reset" and contains(text(), "Add to cart")]'))
                     )
                     driver.execute_script("arguments[0].click();", add_button)
                 except Exception as e:
@@ -97,7 +97,7 @@ def run_selenium_bot(grocery_list, headless=False):
             print(f"Failed to add {item}: {e}")
         time.sleep(2)
 
-    # Open cart before proceeding to checkout
+    # Open cart and proceed to checkout
     try:
         cart_icon = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "CartButton__CartIcon-sc-1fuy2nj-6")))
         driver.execute_script("arguments[0].click();", cart_icon)
@@ -106,10 +106,32 @@ def run_selenium_bot(grocery_list, headless=False):
         checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Proceed To Pay") and contains(@class, "CheckoutStrip__CTAText-sc-1fzbdhy-13")]')))
         driver.execute_script("arguments[0].click();", checkout)
         print("Checkout clicked.")
-    except Exception as e:
-        print(f"Failed at checkout: {e}")
+        time.sleep(5)
 
-    time.sleep(5)
+        # Check if UPI already exists
+        try:
+            existing_upi = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(@class, "Zpayments__Button-sc-127gezb-3") and contains(text(), "Pay Now")]')))
+            driver.execute_script("arguments[0].click();", existing_upi)
+            print("Clicked Pay Now with existing UPI.")
+        except:
+            upi_header = wait.until(EC.element_to_be_clickable((By.XPATH, '//h5[contains(text(), "Add new UPI ID")]')))
+            driver.execute_script("arguments[0].click();", upi_header)
+
+            upi_input = wait.until(EC.presence_of_element_located((By.XPATH, '//input[@type="text" and contains(@class, "bbrwhB")]')))
+            upi_input.clear()
+            upi_input.send_keys("<Enter your UPI id here>")
+            time.sleep(1)
+
+            checkout_btn = wait.until(EC.element_to_be_clickable((By.XPATH, '//span[contains(text(), "Checkout")]')))
+            driver.execute_script("arguments[0].click();", checkout_btn)
+            print("Checkout button clicked.")
+
+        print("Waiting 6 minutes for payment completion...")
+        time.sleep(360)
+
+    except Exception as e:
+        print(f"Failed during checkout flow: {e}")
+
     driver.quit()
 
 if __name__ == '__main__':
