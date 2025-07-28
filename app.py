@@ -6,7 +6,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import pickle
 import os
-import urllib.parse
 
 app = Flask(__name__)
 
@@ -28,12 +27,18 @@ HTML_FORM = """
 </html>
 """
 
+# Load product-specific URLs from file (you can create/update this file)
+PRODUCT_LINKS = {
+    "amul milk 500ml": "https://blinkit.com/prn/amul-taaza-toned-milk/prid/19512",
+    # Add more items here as needed
+}
+
 @app.route('/', methods=['GET', 'POST'])
 def grocery_form():
     if request.method == 'POST':
         grocery_text = request.form['grocery_list']
         headless_mode = 'headless' in request.form
-        grocery_list = [item.strip() for item in grocery_text.split('\n') if item.strip()]
+        grocery_list = [item.strip().lower() for item in grocery_text.split('\n') if item.strip()]
         run_selenium_bot(grocery_list, headless=headless_mode)
         return "Order placed successfully (or attempted)!"
     return render_template_string(HTML_FORM)
@@ -72,19 +77,31 @@ def run_selenium_bot(grocery_list, headless=False):
 
     for item in grocery_list:
         try:
-            query = urllib.parse.quote(item)
-            driver.get(f"https://www.blinkit.com/s/?q={query}")
-            time.sleep(3)
-
-            buttons = driver.find_elements(By.XPATH, '//button[contains(text(), "ADD")]')
-            if buttons:
-                buttons[0].click()
-                print(f"Added {item} to cart.")
+            if item in PRODUCT_LINKS:
+                driver.get(PRODUCT_LINKS[item])
+                time.sleep(3)
+                try:
+                    # Try standard "Add" button
+                    add_button = WebDriverWait(driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Add")]'))
+                    )
+                    driver.execute_script("arguments[0].click();", add_button)
+                except Exception as e1:
+                    try:
+                        # Fallback to "Add to cart" button
+                        add_button = WebDriverWait(driver, 5).until(
+                            EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Add to cart")]'))
+                        )
+                        driver.execute_script("arguments[0].click();", add_button)
+                    except Exception as e2:
+                        print(f"Add button not found for {item}. Errors: {e1}, {e2}")
+                        continue
+                print(f"Added {item} to cart via direct link.")
             else:
-                print(f"No ADD button found for {item}.")
-            time.sleep(2)
+                print(f"No direct link found for {item}.")
         except Exception as e:
             print(f"Failed to add {item}: {e}")
+        time.sleep(2)
 
     # Proceed to cart and attempt checkout
     try:
