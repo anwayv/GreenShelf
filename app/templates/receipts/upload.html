@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+{% block title %}Upload Receipt - Green Shelf{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Receipt</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        <div class="text-center">
+                            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                            <h6>Upload a clear photo of your grocery receipt</h6>
+                            <p class="text-muted">Supported formats: JPG, PNG, GIF (Max 16MB)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.receipt_file.label(class="form-label") }}
+                        {{ form.receipt_file(class="form-control" + (" is-invalid" if form.receipt_file.errors else "")) }}
+                        {% if form.receipt_file.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.receipt_file.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success btn-lg") }}
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Tips for Best Results:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Ensure good lighting</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Keep the receipt flat and unfolded</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Avoid shadows and glare</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Make sure all text is clearly visible</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

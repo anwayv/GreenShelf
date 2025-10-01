@@ -1,0 +1,16 @@
+flask
+selenium
+python-dotenv
+flask-sqlalchemy
+flask-login
+flask-wtf
+wtforms
+werkzeug
+pillow
+opencv-python
+pytesseract
+requests
+google-generativeai
+schedule
+apscheduler
+email_validator

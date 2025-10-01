@@ -1,0 +1,68 @@
+{% extends 'layout.html' %} {% block title %}Save Blinkit Cookies - Green
+Shelf{% endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">
+          <i class="fas fa-cookie-bite me-2"></i>Save Blinkit Login Cookies
+        </h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <h6><i class="fas fa-info-circle me-2"></i>How it works:</h6>
+          <ol class="mb-0">
+            <li>Click the button below to open a browser window</li>
+            <li>Complete your login on Blinkit.com manually</li>
+            <li>Your login cookies will be saved automatically</li>
+            <li>You can then place orders without logging in again</li>
+          </ol>
+        </div>
+
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Important:</strong> Make sure you complete the login process
+          within 60 seconds. The browser will close automatically after that
+          time.
+        </div>
+
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-external-link-alt me-2"></i>Open Browser for
+              Login
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-4">
+          <h6>Cookie Status:</h6>
+          {% if current_user.cookies_saved %}
+          <span class="badge bg-success">
+            <i class="fas fa-check me-1"></i>Cookies Saved
+          </span>
+          <p class="text-muted mt-2">
+            Your Blinkit login cookies are saved. You can place orders
+            automatically.
+          </p>
+          {% else %}
+          <span class="badge bg-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i>No Cookies Saved
+          </span>
+          <p class="text-muted mt-2">
+            You need to save your Blinkit login cookies to place orders
+            automatically.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

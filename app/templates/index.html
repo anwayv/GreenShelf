@@ -1,0 +1,665 @@
+{% extends 'layout.html' %} {% block content %}
+<!-- Notifications -->
+{% if notifications %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="alert alert-info">
+      <h6><i class="fas fa-bell me-2"></i>Recent Notifications</h6>
+      {% for notification in notifications %}
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <strong>{{ notification.title }}</strong><br />
+          <small>{{ notification.message }}</small>
+        </div>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          onclick="markAsRead('{{ notification.id }}', this)"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-12 col-lg-7">
+    <div class="card">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <span><i class="fas fa-boxes me-2"></i>Inventory Management</span>
+        <div class="inventory-buttons">
+          <a href="{{ url_for('receipts.upload') }}" class="inventory-btn">
+            <i class="fas fa-upload"></i>Upload Receipt
+          </a>
+          <a
+            href="{{ url_for('meal_planning.index') }}"
+            class="inventory-btn btn-success"
+          >
+            <i class="fas fa-calendar"></i>Meal Planning
+          </a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Quantity</th>
+              <th>Threshold</th>
+              <th>Unit</th>
+              <th>Category</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if inventory_items %} {% for item in inventory_items %}
+            <tr class="{{ 'table-warning' if item.is_low_stock() else '' }}">
+              <td>{{ item.name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.threshold }}</td>
+              <td>{{ item.unit }}</td>
+              <td>{{ item.category or '-' }}</td>
+              <td class="text-end">
+                <form
+                  action="{{ url_for('main.adjust_item_quantity') }}"
+                  method="POST"
+                  class="d-inline"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <input type="hidden" name="item_id" value="{{ item.id }}" />
+                  <input type="hidden" name="delta" value="-1" />
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-secondary"
+                  >
+                    -1
+                  </button>
+                </form>
+                <form
+                  action="{{ url_for('main.adjust_item_quantity') }}"
+                  method="POST"
+                  class="d-inline"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <input type="hidden" name="item_id" value="{{ item.id }}" />
+                  <input type="hidden" name="delta" value="1" />
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-secondary"
+                  >
+                    +1
+                  </button>
+                </form>
+                <form
+                  action="{{ url_for('main.delete_item') }}"
+                  method="POST"
+                  class="d-inline"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <input type="hidden" name="item_id" value="{{ item.id }}" />
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">
+                No items yet. <a href="#add-item">Add your first item</a>
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Shop by Categories Section -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <span><i class="fas fa-th-large me-2"></i>Add by Categories</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3" id="categoriesGrid">
+          <!-- Categories will be loaded here dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-5">
+    <div class="card">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <span>Low Inventory & Order</span>
+        <div>
+          {% if current_user.cookies_saved %}
+          <span class="badge bg-success">
+            <i class="fas fa-check me-1"></i>Cookies Saved
+          </span>
+          {% else %}
+          <span class="badge bg-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i>No Cookies
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">Items below threshold: {{ low_items|length }}</p>
+        {% if low_items %}
+        <ul class="list-unstyled">
+          {% for item in low_items %}
+          <li class="mb-1">
+            <span class="badge bg-warning">{{ item.name }}</span>
+            <small class="text-muted"
+              >({{ item.quantity }} {{ item.unit }} / {{ item.threshold }} {{
+              item.unit }})</small
+            >
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <form
+          action="{{ url_for('main.order_low_items') }}"
+          method="POST"
+          class="row g-2"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="col-12">
+            <label class="form-label">UPI ID</label>
+            <input
+              type="text"
+              name="upi"
+              class="form-control"
+              value="{{ current_user.upi_id or '' }}"
+              placeholder="your@upi"
+              required
+            />
+          </div>
+          <div class="col-12 form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="checkout"
+              name="checkout"
+              value="1"
+            />
+            <label class="form-check-label" for="checkout"
+              >Proceed to checkout to trigger UPI request (manual
+              confirm)</label
+            >
+          </div>
+          <div class="col-12">
+            <button
+              type="submit"
+              class="btn btn-success"
+              {%
+              if
+              not
+              low_items
+              %}disabled{%
+              endif
+              %}
+            >
+              <i class="fas fa-shopping-cart me-1"></i>Prepare Cart on Blinkit
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">Quick Actions</div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a
+            href="{{ url_for('recipes.index') }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-book me-2"></i>Browse Recipes
+          </a>
+          <a
+            href="{{ url_for('meal_planning.shopping_list') }}"
+            class="btn btn-outline-info"
+          >
+            <i class="fas fa-list me-2"></i>Shopping List
+          </a>
+          <a
+            href="{{ url_for('main.grocery_order') }}"
+            class="btn btn-outline-success"
+          >
+            <i class="fas fa-shopping-cart me-2"></i>Grocery Order
+          </a>
+          <a
+            href="{{ url_for('main.save_cookies') }}"
+            class="btn btn-outline-warning"
+          >
+            <i class="fas fa-cookie-bite me-2"></i>Cookie Management
+          </a>
+          <a
+            href="{{ url_for('auth.profile') }}"
+            class="btn btn-outline-secondary"
+          >
+            <i class="fas fa-user-cog me-2"></i>Profile Settings
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .product-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .product-row {
+    display: flex;
+    gap: 16px;
+  }
+
+  .product-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
+    min-width: 0;
+  }
+
+  @media (min-width: 576px) {
+    .product-card {
+      flex: 1 1 calc(50% - 8px);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .product-card {
+      flex: 1 1 calc(33.333% - 11px);
+    }
+  }
+
+  @media (min-width: 992px) {
+    .product-card {
+      flex: 1 1 calc(25% - 12px);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .product-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  .discount-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #007bff;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    z-index: 10;
+  }
+
+  .product-image {
+    height: 90px;
+    object-fit: contain;
+    margin-bottom: 8px;
+    align-self: center;
+  }
+
+  .delivery-time {
+    font-size: 12px;
+    color: gray;
+    margin-bottom: 4px;
+  }
+
+  .product-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    flex-grow: 1;
+  }
+
+  .product-size {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+  }
+
+  .product-price {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .old-price {
+    font-size: 12px;
+    color: #888;
+    text-decoration: line-through;
+    margin-left: 6px;
+  }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+    gap: 8px;
+  }
+
+  .quantity-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #28a745;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    color: #28a745;
+  }
+
+  .quantity-btn:hover {
+    background: #e6f5ec;
+  }
+
+  .quantity-display {
+    min-width: 30px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .add-to-inventory-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border: 1px solid #007bff;
+    border-radius: 6px;
+    color: #007bff;
+    font-size: 13px;
+    cursor: pointer;
+    background: #fff;
+    transition: background 0.3s;
+    width: 100%;
+  }
+
+  .add-to-inventory-btn:hover {
+    background: #e6f5ec;
+  }
+
+  .add-to-inventory-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cart {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Fix overlapping issues */
+  .card-body {
+    overflow: hidden;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  /* Ensure proper spacing */
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .mt-4 {
+    margin-top: 1.5rem !important;
+  }
+</style>
+
+<script>
+  // Function to load categories from products JSON
+  async function loadCategories() {
+    try {
+      const response = await fetch("/static/products.json");
+      const products = await response.json();
+      const grid = document.getElementById("categoriesGrid");
+
+      // Clear existing content
+      grid.innerHTML = "";
+
+      // Extract unique categories from products
+      const categories = [
+        ...new Set(products.map((product) => product.category)),
+      ];
+
+      // Category icons mapping (fallback if no image)
+      const categoryIcons = {
+        Dairy: "fas fa-glass-whiskey",
+        Fruits: "fas fa-apple-alt",
+        Vegetables: "fas fa-carrot",
+        Bakery: "fas fa-bread-slice",
+        Grains: "fas fa-seedling",
+        Meat: "fas fa-drumstick-bite",
+        Beverages: "fas fa-coffee",
+        Snacks: "fas fa-cookie",
+      };
+
+      // Category images mapping
+      const categoryImages = {
+        "Dairy and Breakfast":
+          "/static/images/categories/dairy and breakfast.png",
+        "Vegetables and Fruits":
+          "/static/images/categories/vegetables and fruits.png",
+        "Bakery and Biscuits":
+          "/static/images/categories/bakery and biscuits.png",
+        "Atta, Rice and Dal":
+          "/static/images/categories/atta, rice and dal.png",
+        Munchies: "/static/images/categories/munchies.png",
+        "Chicken, Meat and Fish":
+          "/static/images/categories/chicken, meat and fish.png",
+        "Cold Drinks and Juices":
+          "/static/images/categories/cold drinks and juices.png",
+        "Tea, Coffee and Health Drinks":
+          "/static/images/categories/tea, coffee and health drinks.png",
+        "Dry Fruits, Masala and Oil":
+          "/static/images/categories/dry fruits, masala and oil.png",
+        "Sauses and Spreads":
+          "/static/images/categories/sauses and spreads.png",
+        "Sweet Tooth": "/static/images/categories/sweet tooth.png",
+        "Instant and Frozen Food":
+          "/static/images/categories/instant and frozen food.png",
+        "Organic and Premium":
+          "/static/images/categories/organic and premium.png",
+      };
+
+      // Category colors
+      const categoryColors = {
+        "Dairy and Breakfast": "primary",
+        "Vegetables and Fruits": "success",
+        "Bakery and Biscuits": "warning",
+        "Atta, Rice and Dal": "secondary",
+        Munchies: "info",
+        "Chicken, Meat and Fish": "danger",
+        "Cold Drinks and Juices": "primary",
+        "Tea, Coffee and Health Drinks": "dark",
+        "Dry Fruits, Masala and Oil": "warning",
+        "Sauses and Spreads": "info",
+        "Sweet Tooth": "danger",
+        "Instant and Frozen Food": "secondary",
+        "Organic and Premium": "success",
+      };
+
+      // Create category cards
+      categories.forEach((category) => {
+        const productsInCategory = products.filter(
+          (product) => product.category === category
+        );
+        const categoryCard = document.createElement("div");
+        categoryCard.className = "col-sm-6 col-md-4 col-lg-3";
+
+        const icon = categoryIcons[category] || "fas fa-shopping-basket";
+        const color = categoryColors[category] || "primary";
+        const image = categoryImages[category];
+
+        categoryCard.innerHTML = `
+          <div class="card category-card h-100" style="cursor: pointer;" onclick="goToCategory('${category}')">
+            ${
+              image
+                ? `<img src="${image}" alt="${category}" class="card-img-top category-full-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                   <div class="fallback-icon text-center py-4" style="display:none;">
+                     <i class="${icon} fa-3x text-${color}"></i>
+                   </div>`
+                : `<div class="fallback-icon text-center py-4">
+                     <i class="${icon} fa-3x text-${color}"></i>
+                   </div>`
+            }
+            <div class="card-body text-center">
+              <h5 class="card-title">${category}</h5>
+              <p class="card-text text-muted">${
+                productsInCategory.length
+              } items available</p>
+            </div>
+          </div>
+        `;
+
+        // Add card to grid (no initial hidden state to prevent invisibility)
+        grid.appendChild(categoryCard);
+      });
+
+      // Animate categories with staggered effect
+      animateCategoryCards();
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      document.getElementById("categoriesGrid").innerHTML =
+        "<div class='col-12 text-center'><div class='alert alert-danger'><i class='fas fa-exclamation-triangle me-2'></i>Error loading categories. Please try again later.</div></div>";
+    }
+  }
+
+  // Function to animate category cards with staggered effect
+  function animateCategoryCards() {
+    const categoryCards = document.querySelectorAll(".category-card");
+
+    categoryCards.forEach((card, index) => {
+      // Set initial state for animation without opacity issues
+      card.style.transform = "translateY(20px) scale(0.95)";
+      card.style.transition = "none";
+
+      setTimeout(() => {
+        card.style.transition = "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+        card.style.transform = "translateY(0) scale(1)";
+      }, index * 80);
+    });
+  }
+
+  // Function to navigate to category page with loading effect
+  function goToCategory(category) {
+    // Add loading effect to clicked card
+    event.currentTarget.style.transform = "scale(0.95)";
+    event.currentTarget.style.transition = "transform 0.2s ease";
+
+    setTimeout(() => {
+      window.location.href = `/category/${encodeURIComponent(category)}`;
+    }, 200);
+  }
+
+  // Function to show loading shimmer effect
+  function showLoadingShimmer() {
+    const grid = document.getElementById("categoriesGrid");
+    grid.innerHTML = "";
+
+    for (let i = 0; i < 8; i++) {
+      const shimmerCard = document.createElement("div");
+      shimmerCard.className = "col-sm-6 col-md-4 col-lg-3 mb-4";
+      shimmerCard.innerHTML = `
+        <div class="card category-card">
+          <div class="loading-shimmer" style="height: 160px; border-radius: 12px 12px 0 0;"></div>
+          <div class="card-body">
+            <div class="loading-shimmer" style="height: 18px; width: 70%; margin-bottom: 8px; border-radius: 4px;"></div>
+            <div class="loading-shimmer" style="height: 14px; width: 50%; border-radius: 4px;"></div>
+          </div>
+        </div>
+      `;
+      grid.appendChild(shimmerCard);
+    }
+  }
+
+  // Load categories when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    // Show loading shimmer first
+    showLoadingShimmer();
+
+    // Load categories after a short delay for better UX
+    setTimeout(() => {
+      loadCategories();
+    }, 500);
+
+    // Keep existing notification functionality
+    console.log("DOM loaded - simple form handling initialized");
+
+    // Add form submission debugging
+    const forms = document.querySelectorAll("form");
+    forms.forEach((form, index) => {
+      form.addEventListener("submit", (e) => {
+        console.log(`Form ${index} submitted:`, form.action || "no action");
+      });
+    });
+
+    console.log("Form handling initialized successfully");
+  });
+
+  function markAsRead(notificationId, buttonElement) {
+    const csrfToken = document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content");
+    fetch(`/notifications/mark-read/${notificationId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Remove the notification from the UI
+          const notificationElement = buttonElement.closest(".mb-2");
+          if (notificationElement) {
+            notificationElement.remove();
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+</script>
+{% endblock %}

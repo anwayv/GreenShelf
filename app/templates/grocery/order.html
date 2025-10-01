@@ -1,0 +1,176 @@
+{% extends 'layout.html' %} {% block title %}Grocery Order - Green Shelf{%
+endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">
+          <i class="fas fa-shopping-cart me-2"></i>Place Grocery Order
+        </h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <h6><i class="fas fa-info-circle me-2"></i>How it works:</h6>
+          <ol class="mb-0">
+            <li>Enter your grocery list (one item per line)</li>
+            <li>Provide your UPI ID for payment</li>
+            <li>
+              Click "Place Order" to automatically add items to Blinkit cart
+            </li>
+            <li>Approve payment in your UPI app when prompted</li>
+          </ol>
+        </div>
+
+        {% if not current_user.cookies_saved %}
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Cookies Required:</strong> You need to save your Blinkit login
+          cookies first to place orders automatically.
+          <a
+            href="{{ url_for('main.save_cookies') }}"
+            class="btn btn-sm btn-warning ms-2"
+          >
+            <i class="fas fa-cookie-bite me-1"></i>Save Cookies
+          </a>
+        </div>
+        {% endif %}
+
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <div class="mb-3">
+            <label for="grocery_list" class="form-label">
+              <strong>Grocery List</strong>
+              <small class="text-muted">(One item per line)</small>
+            </label>
+            <textarea
+              name="grocery_list"
+              id="grocery_list"
+              class="form-control"
+              rows="8"
+              placeholder="Enter your grocery items here, one per line:&#10;amul milk 500ml&#10;english oven sandwich white bread&#10;gokul full cream milk&#10;mother dairy cow milk"
+              required
+              {%
+              if
+              not
+              current_user.cookies_saved
+              %}disabled{%
+              endif
+              %}
+            ></textarea>
+            <div class="form-text">
+              Enter each item on a new line. Use exact product names for best
+              results.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="upi_id" class="form-label">
+              <strong>UPI ID</strong>
+            </label>
+            <input
+              type="text"
+              name="upi_id"
+              id="upi_id"
+              class="form-control"
+              placeholder="your@upi"
+              value="{{ current_user.upi_id or '' }}"
+              required
+              {%
+              if
+              not
+              current_user.cookies_saved
+              %}disabled{%
+              endif
+              %}
+            />
+            <div class="form-text">
+              Your UPI ID for payment (e.g., yourname@paytm, yourname@googlepay)
+            </div>
+          </div>
+
+          <div class="mb-3 form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="headless"
+              name="headless"
+              value="1"
+              checked
+              {%
+              if
+              not
+              current_user.cookies_saved
+              %}disabled{%
+              endif
+              %}
+            />
+            <label class="form-check-label" for="headless">
+              Run in Headless Mode (Faster, Browser won't be visible)
+            </label>
+            <div class="form-text">
+              Recommended for faster processing. Uncheck to see the browser in
+              action.
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button
+              type="submit"
+              class="btn btn-success btn-lg"
+              {%
+              if
+              not
+              current_user.cookies_saved
+              %}disabled{%
+              endif
+              %}
+            >
+              <i class="fas fa-shopping-cart me-2"></i>Place Order on Blinkit
+            </button>
+          </div>
+        </form>
+
+        {% if current_user.cookies_saved %}
+        <div class="mt-4">
+          <div class="alert alert-success">
+            <h6><i class="fas fa-check-circle me-2"></i>Ready to Order!</h6>
+            <p class="mb-0">
+              Your Blinkit cookies are saved. Orders will be placed
+              automatically.
+            </p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const textarea = document.getElementById('grocery_list');
+      const upiInput = document.getElementById('upi_id');
+      const headlessCheckbox = document.getElementById('headless');
+
+      // Auto-resize textarea
+      if (textarea) {
+          textarea.addEventListener('input', function() {
+              this.style.height = 'auto';
+              this.style.height = (this.scrollHeight) + 'px';
+          });
+      }
+
+      // Enable/disable based on cookie status
+      {% if not current_user.cookies_saved %}
+      if (textarea) textarea.placeholder = 'Please save your Blinkit cookies first to use this feature.';
+      if (upiInput) upiInput.placeholder = 'Please save your Blinkit cookies first.';
+      {% endif %}
+  });
+</script>
+{% endblock %}

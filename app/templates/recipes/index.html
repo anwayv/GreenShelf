@@ -1,0 +1,172 @@
+{% extends 'layout.html' %}
+{% block title %}Recipes - Green Shelf{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-book me-2"></i>Recipes</h2>
+    <div>
+        <button class="btn btn-primary me-2" onclick="suggestRecipes()">
+            <i class="fas fa-magic me-1"></i>AI Suggestions
+        </button>
+        <a href="{{ url_for('recipes.create') }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Add Recipe
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for recipe in recipes %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ recipe.name }}</h5>
+                <p class="card-text text-muted">{{ recipe.description or 'No description available' }}</p>
+                
+                <div class="mb-3">
+                    <span class="badge bg-primary me-1">{{ recipe.category.title() }}</span>
+                    <span class="badge bg-secondary me-1">{{ recipe.difficulty.title() }}</span>
+                    {% if recipe.is_ai_generated %}
+                    <span class="badge bg-info">AI Generated</span>
+                    {% endif %}
+                </div>
+                
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <small class="text-muted">Prep</small><br>
+                        <strong>{{ recipe.prep_time or 0 }}m</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted">Cook</small><br>
+                        <strong>{{ recipe.cook_time or 0 }}m</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted">Serves</small><br>
+                        <strong>{{ recipe.servings }}</strong>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i>View Recipe
+                    </a>
+                    <a href="{{ url_for('recipes.edit', id=recipe.id) }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No recipes yet</h4>
+            <p class="text-muted">Start by adding your first recipe or getting AI suggestions based on your inventory.</p>
+            <div class="mt-3">
+                <button class="btn btn-primary me-2" onclick="suggestRecipes()">
+                    <i class="fas fa-magic me-1"></i>Get AI Suggestions
+                </button>
+                <a href="{{ url_for('recipes.create') }}" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i>Add Recipe
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- AI Suggestions Modal -->
+<div class="modal fade" id="suggestionsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-magic me-2"></i>AI Recipe Suggestions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="suggestionsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating recipe suggestions based on your inventory...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function suggestRecipes() {
+    const modal = new bootstrap.Modal(document.getElementById('suggestionsModal'));
+    modal.show();
+    
+    fetch('/recipes/suggest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('suggestionsContent').innerHTML = 
+                `<div class="alert alert-danger">${data.error}</div>`;
+        } else {
+            let html = '<div class="row g-3">';
+            data.recipes.forEach(recipe => {
+                html += `
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">${recipe.name}</h6>
+                                <p class="card-text small">${recipe.description}</p>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary me-1">${recipe.category}</span>
+                                    <span class="badge bg-secondary me-1">${recipe.difficulty}</span>
+                                    <span class="badge bg-info">${recipe.prep_time + recipe.cook_time} min</span>
+                                </div>
+                                <button class="btn btn-success btn-sm" onclick="saveSuggestedRecipe(${JSON.stringify(recipe).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-plus me-1"></i>Save Recipe
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            document.getElementById('suggestionsContent').innerHTML = html;
+        }
+    })
+    .catch(error => {
+        document.getElementById('suggestionsContent').innerHTML = 
+            `<div class="alert alert-danger">Error generating suggestions: ${error.message}</div>`;
+    });
+}
+
+function saveSuggestedRecipe(recipe) {
+    fetch('/recipes/suggest/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipe: recipe })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Recipe saved successfully!');
+            location.reload();
+        } else {
+            alert('Error saving recipe: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error saving recipe: ' + error.message);
+    });
+}
+</script>
+{% endblock %}
+
+

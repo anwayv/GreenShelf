@@ -1,0 +1,135 @@
+{% extends 'layout.html' %}
+{% block title %}Receipts - Green Shelf{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-receipt me-2"></i>Receipts</h2>
+    <a href="{{ url_for('receipts.upload') }}" class="btn btn-success">
+        <i class="fas fa-upload me-1"></i>Upload Receipt
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for receipt in receipts %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title">{{ receipt.filename }}</h6>
+                
+                <div class="mb-3">
+                    {% if receipt.store_name %}
+                    <div class="small text-muted">
+                        <i class="fas fa-store me-1"></i>{{ receipt.store_name }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if receipt.purchase_date %}
+                    <div class="small text-muted">
+                        <i class="fas fa-calendar me-1"></i>{{ receipt.purchase_date.strftime('%B %d, %Y') }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if receipt.total_amount %}
+                    <div class="small text-muted">
+                        <i class="fas fa-rupee-sign me-1"></i>₹{{ receipt.total_amount }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    {% if receipt.is_processed %}
+                    <span class="badge bg-success">Processed</span>
+                    {% else %}
+                    <span class="badge bg-warning">Pending</span>
+                    {% endif %}
+                    
+                    {% if receipt.parsed_items %}
+                    <span class="badge bg-info">{{ receipt.get_parsed_items()|length }} items</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('receipts.view', id=receipt.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i>View Details
+                    </a>
+                    
+                    {% if not receipt.is_processed %}
+                    <form action="{{ url_for('receipts.process', id=receipt.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-warning btn-sm w-100">
+                            <i class="fas fa-cog me-1"></i>Process
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    {% if receipt.is_processed and receipt.get_parsed_items() %}
+                    <form action="{{ url_for('receipts.apply_to_inventory', id=receipt.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="fas fa-plus me-1"></i>Apply to Inventory
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No receipts uploaded yet</h4>
+            <p class="text-muted">Upload your grocery receipts to automatically populate your inventory using AI-powered OCR.</p>
+            <a href="{{ url_for('receipts.upload') }}" class="btn btn-success">
+                <i class="fas fa-upload me-1"></i>Upload Your First Receipt
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if receipts %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>How Receipt Processing Works</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-upload fa-2x text-primary"></i>
+                        </div>
+                        <h6>1. Upload</h6>
+                        <p class="small text-muted">Upload a clear photo of your grocery receipt</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-eye fa-2x text-info"></i>
+                        </div>
+                        <h6>2. OCR Processing</h6>
+                        <p class="small text-muted">AI extracts text and identifies items from the receipt</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-check fa-2x text-warning"></i>
+                        </div>
+                        <h6>3. Review</h6>
+                        <p class="small text-muted">Review the extracted items and make corrections if needed</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-plus fa-2x text-success"></i>
+                        </div>
+                        <h6>4. Apply</h6>
+                        <p class="small text-muted">Add the items to your inventory automatically</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

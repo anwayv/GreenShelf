@@ -1,0 +1,474 @@
+{% extends 'layout.html' %} {% block content %}
+<div class="container-fluid px-0">
+  <!-- Breadcrumb Navigation -->
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-3 pt-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('main.index') }}">
+            <i class="fas fa-home me-1"></i>Home
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ category }}
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Enhanced Category Header -->
+  <div class="container mb-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="category-header">
+          <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h2 class="mb-2">
+                  <i class="fas fa-shopping-basket me-3"></i>{{ category }}
+                </h2>
+                <p class="mb-0 opacity-75">
+                  <i class="fas fa-clock me-2"></i>Fresh products delivered in
+                  14 minutes
+                </p>
+              </div>
+              <div class="cart-info">
+                <span class="badge fs-6"
+                  ><i class="fas fa-shopping-cart me-2"></i>Cart:
+                  <span id="cartCount">0</span> items</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="container-fluid category-page">
+    <div class="row">
+      <!-- Left Sidebar for Subcategories -->
+      <div class="col-lg-2 col-md-3">
+        <div class="subcategory-sidebar">
+          <div class="sidebar-header">
+            <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Categories</h5>
+          </div>
+          <div class="subcategory-list" id="subcategoryList">
+            <!-- Subcategories will be loaded here dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Products Area -->
+      <div class="col-lg-10 col-md-9">
+        <div class="products-container">
+          <!-- Active Subcategory Header -->
+          <div class="subcategory-header mb-4" id="subcategoryHeader">
+            <h4 id="activeSubcategoryTitle">All Products</h4>
+            <p class="text-muted mb-0" id="productCount">Loading products...</p>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="row g-3" id="productsGrid">
+            <!-- Products will be loaded here dynamically -->
+          </div>
+
+          <!-- Loading Spinner -->
+          <div
+            class="text-center py-5"
+            id="loadingSpinner"
+            style="display: none"
+          >
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading products...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div class="text-center py-5" id="emptyState" style="display: none">
+            <i class="fas fa-shopping-basket fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No products found</h4>
+            <p class="text-muted">Try selecting a different subcategory</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to Categories Button -->
+  <div class="container mt-5 mb-4">
+    <div class="row">
+      <div class="col-12 text-center">
+        <a
+          href="{{ url_for('main.index') }}"
+          class="btn btn-outline-primary btn-lg"
+        >
+          <i class="fas fa-arrow-left me-2"></i>Back to Categories
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Category name from template
+  const categoryName = "{{ category }}";
+  let allCategoryProducts = [];
+  let currentSubcategory = "all";
+
+  // Function to load products for specific category
+  async function loadCategoryProducts() {
+    try {
+      showLoading(true);
+      const response = await fetch("/static/products.json");
+      const products = await response.json();
+
+      // Filter products by category
+      allCategoryProducts = products.filter(
+        (product) => product.category === categoryName
+      );
+
+      if (allCategoryProducts.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      // Load subcategories
+      loadSubcategories(allCategoryProducts);
+
+      // Load all products initially
+      displayProducts(allCategoryProducts);
+      updateProductCount(allCategoryProducts.length, "All Products");
+    } catch (error) {
+      console.error("Error loading category products:", error);
+      showError();
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // Function to load subcategories in sidebar
+  function loadSubcategories(products) {
+    const subcategoryList = document.getElementById("subcategoryList");
+    subcategoryList.innerHTML = "";
+
+    // Extract unique subcategories
+    const subcategories = [
+      ...new Set(products.map((product) => product.subcategory)),
+    ];
+
+    // Add "All Products" option
+    const allOption = createSubcategoryItem("All Products", "all", true);
+    subcategoryList.appendChild(allOption);
+
+    // Add individual subcategories
+    subcategories.forEach((subcategory) => {
+      const subcategoryItem = createSubcategoryItem(
+        subcategory,
+        subcategory,
+        false
+      );
+      subcategoryList.appendChild(subcategoryItem);
+    });
+  }
+
+  // Function to create subcategory list item
+  function createSubcategoryItem(displayName, value, isActive) {
+    const item = document.createElement("div");
+    item.className = `subcategory-item ${isActive ? "active" : ""}`;
+    item.setAttribute("data-subcategory", value);
+
+    const productsInSubcategory =
+      value === "all"
+        ? allCategoryProducts.length
+        : allCategoryProducts.filter((p) => p.subcategory === value).length;
+
+    item.innerHTML = `
+      <div class="subcategory-link">
+        <span class="subcategory-name">${displayName}</span>
+        <span class="subcategory-count">(${productsInSubcategory})</span>
+      </div>
+    `;
+
+    item.addEventListener("click", () => {
+      selectSubcategory(value, displayName);
+    });
+
+    return item;
+  }
+
+  // Function to select a subcategory
+  function selectSubcategory(subcategory, displayName) {
+    currentSubcategory = subcategory;
+
+    // Update active state in sidebar
+    document.querySelectorAll(".subcategory-item").forEach((item) => {
+      item.classList.remove("active");
+    });
+    document
+      .querySelector(`[data-subcategory="${subcategory}"]`)
+      .classList.add("active");
+
+    // Filter and display products
+    const filteredProducts =
+      subcategory === "all"
+        ? allCategoryProducts
+        : allCategoryProducts.filter(
+            (product) => product.subcategory === subcategory
+          );
+
+    displayProducts(filteredProducts);
+    updateProductCount(filteredProducts.length, displayName);
+  }
+
+  // Function to display products in grid
+  function displayProducts(products) {
+    const grid = document.getElementById("productsGrid");
+    grid.innerHTML = "";
+
+    if (products.length === 0) {
+      showEmptyState();
+      return;
+    }
+
+    products.forEach((product) => {
+      const productCard = document.createElement("div");
+      productCard.className = "col-xl-2 col-lg-3 col-md-4 col-sm-6";
+
+      productCard.innerHTML = `
+        <div class="card product-card h-100">
+          ${
+            product.discount
+              ? `<span class="discount-badge">${product.discount}</span>`
+              : ""
+          }
+          <div class="card-body p-3">
+            <img src="${product.image}" alt="${
+        product.name
+      }" class="product-image mb-3" 
+                 onerror="this.src='/static/images/placeholder.jpg'" />
+            <div class="delivery-time mb-2">${product.delivery}</div>
+            <h6 class="product-name">${product.name}</h6>
+            <p class="product-size text-muted">${product.size}</p>
+            <div class="mb-3">
+              <span class="product-price">₹${product.price}</span>
+              ${
+                product.oldPrice
+                  ? `<span class="old-price">₹${product.oldPrice}</span>`
+                  : ""
+              }
+            </div>
+            <div class="quantity-controls">
+              <button class="quantity-btn minus-btn" data-product-id="${
+                product.id
+              }">-</button>
+              <span class="quantity-display" id="quantity-${
+                product.id
+              }">0</span>
+              <button class="quantity-btn plus-btn" data-product-id="${
+                product.id
+              }">+</button>
+            </div>
+            <button class="add-to-inventory-btn mt-2" id="add-btn-${
+              product.id
+            }" 
+                    data-product-id="${product.id}" data-product-name="${
+        product.name
+      }" 
+                    data-product-category="${product.category}" disabled>
+              Add to Inventory
+            </button>
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(productCard);
+    });
+
+    // Setup event listeners after creating cards
+    setupEventListeners();
+  }
+
+  // Function to update product count display
+  function updateProductCount(count, subcategoryName) {
+    const productCountEl = document.getElementById("productCount");
+    const titleEl = document.getElementById("activeSubcategoryTitle");
+
+    titleEl.textContent = subcategoryName;
+    productCountEl.textContent = `${count} products available`;
+  }
+
+  // Function to show/hide loading spinner
+  function showLoading(show) {
+    const spinner = document.getElementById("loadingSpinner");
+    const grid = document.getElementById("productsGrid");
+
+    if (show) {
+      spinner.style.display = "block";
+      grid.style.display = "none";
+    } else {
+      spinner.style.display = "none";
+      grid.style.display = "block";
+    }
+  }
+
+  // Function to show empty state
+  function showEmptyState() {
+    document.getElementById("emptyState").style.display = "block";
+    document.getElementById("productsGrid").style.display = "none";
+    document.getElementById("loadingSpinner").style.display = "none";
+  }
+
+  // Function to show error state
+  function showError() {
+    const grid = document.getElementById("productsGrid");
+    grid.innerHTML = `
+      <div class="col-12 text-center">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Error loading products. Please try again later.
+        </div>
+      </div>
+    `;
+  }
+
+  // Function to setup event listeners for product controls
+  function setupEventListeners() {
+    // Plus buttons
+    document.querySelectorAll(".plus-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        const productId = this.getAttribute("data-product-id");
+        const quantityEl = document.getElementById(`quantity-${productId}`);
+        let quantity = parseInt(quantityEl.textContent) || 0;
+        quantity++;
+        quantityEl.textContent = quantity;
+
+        const addBtn = document.getElementById(`add-btn-${productId}`);
+        if (quantity > 0) {
+          addBtn.disabled = false;
+        }
+
+        updateCartCount(1);
+      });
+    });
+
+    // Minus buttons
+    document.querySelectorAll(".minus-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        const productId = this.getAttribute("data-product-id");
+        const quantityEl = document.getElementById(`quantity-${productId}`);
+        let quantity = parseInt(quantityEl.textContent) || 0;
+        if (quantity > 0) {
+          quantity--;
+          quantityEl.textContent = quantity;
+
+          const addBtn = document.getElementById(`add-btn-${productId}`);
+          if (quantity === 0) {
+            addBtn.disabled = true;
+          }
+
+          updateCartCount(-1);
+        }
+      });
+    });
+
+    // Add to inventory buttons
+    document.querySelectorAll(".add-to-inventory-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        const productId = this.getAttribute("data-product-id");
+        const productName = this.getAttribute("data-product-name");
+        const productCategory = this.getAttribute("data-product-category");
+        const quantityEl = document.getElementById(`quantity-${productId}`);
+        const quantity = parseInt(quantityEl.textContent) || 0;
+
+        if (quantity > 0) {
+          addToInventory(productName, quantity, productId, productCategory);
+        }
+      });
+    });
+  }
+
+  // Function to add product to inventory
+  function addToInventory(productName, quantity, productId, category) {
+    const csrfToken = document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content");
+
+    const formData = new FormData();
+    formData.append("csrf_token", csrfToken);
+    formData.append("name", productName);
+    formData.append("quantity", quantity);
+    formData.append("threshold", 1);
+    formData.append("unit", "pcs");
+    formData.append("category", category.toLowerCase());
+
+    fetch("/inventory", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => {
+        if (response.ok) {
+          const quantityEl = document.getElementById(`quantity-${productId}`);
+          quantityEl.textContent = "0";
+
+          const addBtn = document.getElementById(`add-btn-${productId}`);
+          addBtn.disabled = true;
+
+          showAlert(
+            `${productName} (${quantity}) added to inventory!`,
+            "success"
+          );
+          updateCartCount(-quantity);
+        } else {
+          showAlert(
+            "Failed to add item to inventory. Please try again.",
+            "danger"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showAlert(
+          "Failed to add item to inventory. Please try again.",
+          "danger"
+        );
+      });
+  }
+
+  // Function to update cart count
+  function updateCartCount(delta) {
+    const cartCountEl = document.getElementById("cartCount");
+    let cartCount = parseInt(cartCountEl.textContent) || 0;
+    cartCount += delta;
+    cartCount = Math.max(0, cartCount);
+    cartCountEl.textContent = cartCount;
+  }
+
+  // Function to show alert messages
+  function showAlert(message, type) {
+    const alertDiv = document.createElement("div");
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText =
+      "top: 20px; right: 20px; z-index: 1050; min-width: 300px;";
+    alertDiv.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+      if (alertDiv.parentNode) {
+        alertDiv.remove();
+      }
+    }, 3000);
+  }
+
+  // Load category products when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    loadCategoryProducts();
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+{% block title %}Meal Planning - Green Shelf{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calendar me-2"></i>Meal Planning</h2>
+    <div>
+        <button class="btn btn-primary me-2" onclick="autoSuggestMeals()">
+            <i class="fas fa-magic me-1"></i>Auto-Suggest
+        </button>
+        <a href="{{ url_for('meal_planning.add') }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Add Meal
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Week of {{ week_dates[0].strftime('%B %d') }} - {{ week_dates[6].strftime('%B %d, %Y') }}</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 120px;">Date</th>
+                                <th>Breakfast</th>
+                                <th>Lunch</th>
+                                <th>Dinner</th>
+                                <th>Snack</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for date in week_dates %}
+                            <tr>
+                                <td class="text-center">
+                                    <div class="fw-bold">{{ date.strftime('%a') }}</div>
+                                    <div class="small text-muted">{{ date.strftime('%b %d') }}</div>
+                                    {% if date == today %}
+                                    <span class="badge bg-primary">Today</span>
+                                    {% endif %}
+                                </td>
+                                {% for meal_type in ['breakfast', 'lunch', 'dinner', 'snack'] %}
+                                <td>
+                                    {% set meal = meal_plans[date] | selectattr('meal_type', 'equalto', meal_type) | first %}
+                                    {% if meal %}
+                                        <div class="meal-item">
+                                            {% if meal.recipe %}
+                                                <div class="fw-bold">{{ meal.recipe.name }}</div>
+                                                <div class="small text-muted">{{ meal.servings }} serving{{ 's' if meal.servings > 1 else '' }}</div>
+                                                {% if meal.is_cooked %}
+                                                    <span class="badge bg-success">Cooked</span>
+                                                {% else %}
+                                                    <button class="btn btn-sm btn-outline-success" onclick="cookMeal({{ meal.id }})">
+                                                        <i class="fas fa-utensils me-1"></i>Cook
+                                                    </button>
+                                                {% endif %}
+                                            {% else %}
+                                                <div class="fw-bold">{{ meal.custom_meal_name }}</div>
+                                                <div class="small text-muted">{{ meal.servings }} serving{{ 's' if meal.servings > 1 else '' }}</div>
+                                            {% endif %}
+                                            <div class="mt-1">
+                                                <a href="{{ url_for('meal_planning.edit', id=meal.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ url_for('meal_planning.delete', id=meal.id) }}" method="POST" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this meal?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center text-muted">
+                                            <a href="{{ url_for('meal_planning.add') }}?date={{ date.strftime('%Y-%m-%d') }}&meal_type={{ meal_type }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-list me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('meal_planning.shopping_list') }}" class="btn btn-outline-info">
+                        <i class="fas fa-shopping-cart me-2"></i>Generate Shopping List
+                    </a>
+                    <a href="{{ url_for('recipes.index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-book me-2"></i>Browse Recipes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>This Week's Stats</h6>
+            </div>
+            <div class="card-body">
+                {% set total_meals = meal_plans.values() | map('list') | map('length') | sum %}
+                {% set cooked_meals = meal_plans.values() | map('list') | map('selectattr', 'is_cooked', true) | map('list') | map('length') | sum %}
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="fw-bold text-primary">{{ total_meals }}</div>
+                        <div class="small text-muted">Total Meals</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="fw-bold text-success">{{ cooked_meals }}</div>
+                        <div class="small text-muted">Cooked</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cookMeal(mealId) {
+    if (confirm('Mark this meal as cooked? This will update your inventory.')) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch(`/meal-planning/${mealId}/cook`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error marking meal as cooked');
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
+}
+
+function autoSuggestMeals() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch('/meal-planning/auto-suggest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            let message = 'Found ' + data.suggested_meals.length + ' recipe suggestions:\n\n';
+            data.suggested_meals.forEach(meal => {
+                message += `• ${meal.name} (${meal.category})\n`;
+            });
+            message += '\nWould you like to add these to your meal plan?';
+            
+            if (confirm(message)) {
+                // In a real implementation, you would add these to the meal plan
+                alert('Feature coming soon! You can manually add these recipes to your meal plan.');
+            }
+        }
+    })
+    .catch(error => {
+        alert('Error generating suggestions: ' + error.message);
+    });
+}
+</script>
+{% endblock %}
+

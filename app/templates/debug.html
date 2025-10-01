@@ -1,0 +1,154 @@
+{% extends 'layout.html' %} {% block title %}Debug Page - Green Shelf{% endblock
+%} {% block content %}
+<div class="container py-4">
+  <h2>🔧 Debug Information</h2>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">System Status</div>
+        <div class="card-body">
+          <p>
+            <strong>User:</strong> {{ current_user.username if
+            current_user.is_authenticated else 'Not logged in' }}
+          </p>
+          <p>
+            <strong>Cookies Saved:</strong> {{ current_user.cookies_saved if
+            current_user.is_authenticated else 'N/A' }}
+          </p>
+          <p>
+            <strong>CSRF Token:</strong> {{ csrf_token() if csrf_token else 'Not
+            available' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Quick Tests</div>
+        <div class="card-body">
+          <button class="btn btn-primary mb-2" onclick="testCSRF()">
+            Test CSRF Token
+          </button>
+          <button class="btn btn-success mb-2" onclick="testAJAX()">
+            Test AJAX Request
+          </button>
+          <button class="btn btn-info mb-2" onclick="testElements()">
+            Test DOM Elements
+          </button>
+          <div id="test-results" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">Console Log</div>
+        <div class="card-body">
+          <div
+            id="console-log"
+            style="
+              background: #f8f9fa;
+              padding: 10px;
+              border-radius: 5px;
+              font-family: monospace;
+              height: 300px;
+              overflow-y: auto;
+            "
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function log(message) {
+      const console = document.getElementById('console-log');
+      const timestamp = new Date().toLocaleTimeString();
+      console.innerHTML += `[${timestamp}] ${message}<br>`;
+      console.scrollTop = console.scrollHeight;
+      window.console.log(message);
+  }
+
+  function testCSRF() {
+      log('Testing CSRF token...');
+      const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      const csrfInput = document.querySelector('input[name="csrf_token"]');
+
+      if (csrfMeta) {
+          log('✅ CSRF meta tag found: ' + csrfMeta.getAttribute('content'));
+      } else {
+          log('❌ CSRF meta tag not found');
+      }
+
+      if (csrfInput) {
+          log('✅ CSRF input found: ' + csrfInput.value);
+      } else {
+          log('❌ CSRF input not found');
+      }
+  }
+
+  function testAJAX() {
+      log('Testing AJAX request...');
+      const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+      if (!csrfToken) {
+          log('❌ No CSRF token available for AJAX test');
+          return;
+      }
+
+      fetch('/products/search', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({ q: 'test' })
+      })
+      .then(response => {
+          log(`AJAX response: ${response.status} ${response.statusText}`);
+          return response.json();
+      })
+      .then(data => {
+          log('AJAX data received: ' + JSON.stringify(data));
+          document.getElementById('test-results').innerHTML = '<div class="alert alert-success">AJAX test successful!</div>';
+      })
+      .catch(error => {
+          log('AJAX error: ' + error.message);
+          document.getElementById('test-results').innerHTML = '<div class="alert alert-danger">AJAX test failed: ' + error.message + '</div>';
+      });
+  }
+
+  function testElements() {
+      log('Testing DOM elements...');
+
+      const elements = [
+          'blinkit-search',
+          'btn-blinkit-search',
+          'blinkit-results',
+          'save-item',
+          'selected_name',
+          'selected_query'
+      ];
+
+      elements.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+              log(`✅ Element '${id}' found`);
+          } else {
+              log(`❌ Element '${id}' not found`);
+          }
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      log('Debug page loaded');
+      log('User authenticated: ' + {{ current_user.is_authenticated|tojson }});
+  });
+</script>
+{% endblock %}

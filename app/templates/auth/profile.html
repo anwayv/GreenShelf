@@ -1,0 +1,143 @@
+{% extends 'layout.html' %}
+{% block title %}Profile - Green Shelf{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-cog me-2"></i>Profile Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.family_size.label(class="form-label") }}
+                            {{ form.family_size(class="form-control" + (" is-invalid" if form.family_size.errors else "")) }}
+                            {% if form.family_size.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.family_size.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.upi_id.label(class="form-label") }}
+                            {{ form.upi_id(class="form-control" + (" is-invalid" if form.upi_id.errors else "")) }}
+                            {% if form.upi_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.upi_id.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.preferred_brands.label(class="form-label") }}
+                        {{ form.preferred_brands(class="form-control" + (" is-invalid" if form.preferred_brands.errors else ""), rows=3, placeholder="Enter one brand per line, e.g.:\nAmul\nGokul\nMother Dairy") }}
+                        {% if form.preferred_brands.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.preferred_brands.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.dietary_restrictions.label(class="form-label") }}
+                        {{ form.dietary_restrictions(class="form-control" + (" is-invalid" if form.dietary_restrictions.errors else ""), rows=3, placeholder="Enter one restriction per line, e.g.:\nLactose intolerant\nDiabetic\nVegetarian") }}
+                        {% if form.dietary_restrictions.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.dietary_restrictions.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.taste_preferences.label(class="form-label") }}
+                        {{ form.taste_preferences(class="form-control" + (" is-invalid" if form.taste_preferences.errors else ""), rows=3, placeholder="Enter one preference per line, e.g.:\nSpicy\nSweet\nSalty") }}
+                        {% if form.taste_preferences.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.taste_preferences.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.delivery_time_slots.label(class="form-label") }}
+                        {{ form.delivery_time_slots(class="form-control" + (" is-invalid" if form.delivery_time_slots.errors else ""), rows=3, placeholder="Enter available time slots, e.g.:\n9:00 AM - 12:00 PM\n6:00 PM - 9:00 PM") }}
+                        {% if form.delivery_time_slots.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.delivery_time_slots.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">Auto-Order Settings</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.check_interval_minutes.label(class="form-label") }}
+                            {{ form.check_interval_minutes(class="form-control" + (" is-invalid" if form.check_interval_minutes.errors else "")) }}
+                            {% if form.check_interval_minutes.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.check_interval_minutes.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.auto_order_enabled(class="form-check-input") }}
+                        {{ form.auto_order_enabled.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.checkout_enabled(class="form-check-input") }}
+                        {{ form.checkout_enabled.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Account Information</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ current_user.username }}</p>
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                <p><strong>Member since:</strong> {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                <p><strong>Pincode:</strong> {{ current_user.pincode }}</p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('auth.onboarding') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-play me-1"></i>Setup Guide
+                    </a>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-home me-1"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

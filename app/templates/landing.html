@@ -1,0 +1,143 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">🛒 Green Shelf</h1>
+                <p class="lead mb-4">Automate your entire grocery planning, inventory management, and order placement process with intelligent scheduling, AI, and automation.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">Get Started</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">Sign In</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-shopping-cart fa-10x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-robot fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Smart Automation</h5>
+                    <p class="card-text">Automatically track inventory, generate shopping lists, and place orders based on your consumption patterns and meal plans.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-brain fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">AI-Powered Recipes</h5>
+                    <p class="card-text">Get personalized recipe suggestions using AI based on your available ingredients, dietary preferences, and family size.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-receipt fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">Receipt Processing</h5>
+                    <p class="card-text">Upload receipt photos and automatically update your inventory using advanced OCR and NLP technology.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title">📅 Meal Planning</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Weekly/monthly meal planning calendar</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Recipe suggestions based on available ingredients</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Automatic inventory deduction when cooking</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Smart shopping list generation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title">🔄 Automated Ordering</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Seamless Blinkit integration</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Automatic order placement for low stock items</li>
+                        <li><i class="fas fa-check text-success me-2"></i>UPI payment integration</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Delivery time slot preferences</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-center mb-4">How It Works</h5>
+                    <div class="row g-4">
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="fw-bold">1</span>
+                                </div>
+                            </div>
+                            <h6>Sign Up & Setup</h6>
+                            <p class="small text-muted">Create your account and set your preferences, dietary restrictions, and family size.</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="fw-bold">2</span>
+                                </div>
+                            </div>
+                            <h6>Add Inventory</h6>
+                            <p class="small text-muted">Add your current inventory or upload receipt photos to automatically populate your stock.</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="fw-bold">3</span>
+                                </div>
+                            </div>
+                            <h6>Plan Meals</h6>
+                            <p class="small text-muted">Use our AI-powered recipe suggestions to plan your meals and automatically update inventory.</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="fw-bold">4</span>
+                                </div>
+                            </div>
+                            <h6>Auto-Order</h6>
+                            <p class="small text-muted">Let Green Shelf automatically place orders when items run low, with seamless Blinkit integration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-5">
+        <h3 class="mb-4">Ready to Transform Your Grocery Experience?</h3>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Start Your Free Account</a>
+    </div>
+</div>
+{% endblock %}
+

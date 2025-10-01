@@ -30,7 +30,7 @@ HTML_FORM = """
 # Load product-specific URLs from file (you can create/update this file)
 PRODUCT_LINKS = {
     "amul milk 500ml": "https://blinkit.com/prn/amul-taaza-toned-milk/prid/19512",
-    "gokul full cream milk": "https://blinkit.com/prn/gokul-full-cream-milk/prid/242693",
+    "Gokul Full Cream Milk": "https://blinkit.com/prn/gokul-full-cream-milk/prid/242693",
     "english oven sandwich white bread": "https://blinkit.com/prn/english-oven-sandwich-white-bread/prid/18403",
     "amul gold full cream milk": "https://blinkit.com/prn/amul-gold-full-cream-milk/prid/12872",
     "amul cow milk": "https://blinkit.com/prn/amul-cow-milk/prid/160704",
@@ -121,13 +121,17 @@ def run_selenium_bot(grocery_list, headless=False):
 
     # Open cart and proceed to checkout
     try:
-        cart_icon = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "CartButton__CartIcon-sc-1fuy2nj-6")))
+        cart_icon = wait.until(EC.element_to_be_clickable(
+        (By.CLASS_NAME, "CartButton__CartIcon-sc-1fuy2nj-6")
+        ))
         driver.execute_script("arguments[0].click();", cart_icon)
         time.sleep(3)
 
-        checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Proceed To Pay") and contains(@class, "CheckoutStrip__CTAText-sc-1fzbdhy-13")]')))
+        checkout = wait.until(EC.element_to_be_clickable((
+        By.CLASS_NAME,
+        "CheckoutStrip__Icon-sc-1fzbdhy-15 ffuOGj"
+        )))
         driver.execute_script("arguments[0].click();", checkout)
-        print("Checkout clicked.")
         time.sleep(5)
 
         # Check if UPI already exists

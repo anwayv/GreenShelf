@@ -1,0 +1,92 @@
+{% extends 'layout.html' %}
+{% block title %}Setup Guide - Green Shelf{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-rocket me-2"></i>Welcome to Green Shelf!</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Let's get your Green Shelf account set up for the best grocery automation experience.</p>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-link fa-3x text-primary mb-3"></i>
+                                <h5>1. Connect Blinkit</h5>
+                                <p class="text-muted">Link your Blinkit account for automated ordering</p>
+                                <button class="btn btn-primary" onclick="openBlinkitWindow()">
+                                    <i class="fas fa-external-link-alt me-1"></i>Connect Blinkit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-upload fa-3x text-info mb-3"></i>
+                                <h5>2. Upload Receipts</h5>
+                                <p class="text-muted">Upload your recent grocery receipts to populate inventory</p>
+                                <a href="{{ url_for('receipts.upload') }}" class="btn btn-info">
+                                    <i class="fas fa-upload me-1"></i>Upload Receipts
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-plus fa-3x text-success mb-3"></i>
+                                <h5>3. Add Inventory</h5>
+                                <p class="text-muted">Manually add items to your inventory</p>
+                                <a href="{{ url_for('main.index') }}" class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i>Add Items
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar fa-3x text-warning mb-3"></i>
+                                <h5>4. Plan Meals</h5>
+                                <p class="text-muted">Start planning your meals and get recipe suggestions</p>
+                                <a href="{{ url_for('meal_planning.index') }}" class="btn btn-warning">
+                                    <i class="fas fa-calendar me-1"></i>Plan Meals
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-check me-2"></i>Complete Setup
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openBlinkitWindow() {
+    // Open Blinkit in a new window for cookie capture
+    const blinkitWindow = window.open('https://www.blinkit.com', 'blinkit', 'width=800,height=600');
+    
+    // Show instructions
+    alert('Please log in to Blinkit in the new window. Once logged in, close the window and we\'ll capture your session for automated ordering.');
+    
+    // In a real implementation, you would use postMessage API to capture cookies
+    // For now, this is a placeholder for the WebView integration
+}
+</script>
+{% endblock %}
+
+
