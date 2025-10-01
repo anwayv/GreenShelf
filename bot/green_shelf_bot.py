@@ -1,8 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 import logging
 import pickle
 import os
@@ -16,13 +18,68 @@ class GreenShelfBot:
         self.upi_id = upi_id
         self.user_id = user_id
         self.options = Options()
-        # Helpful defaults for reliability
+        
+        # Enhanced Chrome options for better reliability and crash prevention
         self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--no-sandbox")
+        self.options.add_argument("--no-sandbox") 
+        self.options.add_argument("--disable-dev-shm-usage")
+        self.options.add_argument("--disable-extensions")
+        self.options.add_argument("--disable-plugins")
+        self.options.add_argument("--disable-images")
+        self.options.add_argument("--disable-javascript")
+        self.options.add_argument("--disable-notifications")
+        self.options.add_argument("--disable-popup-blocking")
+        self.options.add_argument("--disable-translate")
+        self.options.add_argument("--disable-logging")
+        self.options.add_argument("--disable-background-timer-throttling")
+        self.options.add_argument("--disable-backgrounding-occluded-windows")
+        self.options.add_argument("--disable-renderer-backgrounding")
+        self.options.add_argument("--disable-features=TranslateUI")
+        self.options.add_argument("--disable-ipc-flooding-protection")
         self.options.add_argument("--window-size=1280,900")
+        self.options.add_argument("--start-maximized")
+        self.options.add_argument("--remote-debugging-port=9222")
+        
+        # Memory and performance optimizations
+        self.options.add_argument("--max_old_space_size=4096")
+        self.options.add_argument("--memory-pressure-off")
+        
+        # User agent to avoid detection
+        self.options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        
+        # Headless mode configuration
         if Config.HEADLESS:
             self.options.add_argument("--headless=new")
-        self.driver = webdriver.Chrome(options=self.options)
+            self.options.add_argument("--disable-software-rasterizer")
+        
+        # Disable logging and crash reporting
+        self.options.add_argument("--log-level=3")
+        self.options.add_argument("--silent")
+        self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        self.options.add_experimental_option('useAutomationExtension', False)
+        
+        try:
+            # Use webdriver-manager to automatically handle ChromeDriver
+            service = Service(ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(service=service, options=self.options)
+        except Exception as e:
+            logging.error(f"Failed to initialize Chrome driver with webdriver-manager: {e}")
+            try:
+                # Fallback: try without service (manual ChromeDriver)
+                self.driver = webdriver.Chrome(options=self.options)
+            except Exception as e2:
+                logging.error(f"Failed to initialize Chrome driver manually: {e2}")
+                # Final fallback: try with minimal options
+                fallback_options = Options()
+                fallback_options.add_argument("--no-sandbox")
+                fallback_options.add_argument("--disable-dev-shm-usage") 
+                if Config.HEADLESS:
+                    fallback_options.add_argument("--headless=new")
+                try:
+                    service = Service(ChromeDriverManager().install())
+                    self.driver = webdriver.Chrome(service=service, options=fallback_options)
+                except Exception:
+                    self.driver = webdriver.Chrome(options=fallback_options)
         self.wait = WebDriverWait(self.driver, Config.SELENIUM_TIMEOUT)
         self.short_wait = WebDriverWait(self.driver, 5)
         self.debug_dir = Path(__file__).resolve().parents[1] / "data" / "screenshots"
@@ -193,10 +250,7 @@ class GreenShelfBot:
                     snap = self._save_debug(f"error_{item}")
                     results.append(f"❌ Failed to add {item}: {str(item_error)[:120]} (see {snap})")
         finally:
-            try:
-                self.driver.quit()
-            except Exception:
-                pass
+            self.cleanup()
         return results
 
     def proceed_to_checkout_and_select_upi(self, upi_id: str):
@@ -292,8 +346,18 @@ class GreenShelfBot:
                 except Exception:
                     continue
         finally:
-            try:
-                self.driver.quit()
-            except Exception:
-                pass
+            self.cleanup()
         return products
+    
+    def cleanup(self):
+        """Safely cleanup the Chrome driver and resources"""
+        try:
+            if hasattr(self, 'driver') and self.driver:
+                self.driver.quit()
+                self.driver = None
+        except Exception as e:
+            logging.warning(f"Error during cleanup: {e}")
+    
+    def __del__(self):
+        """Destructor to ensure cleanup"""
+        self.cleanup()

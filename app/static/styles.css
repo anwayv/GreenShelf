@@ -21,6 +21,7 @@ h6 {
   border: none !important;
   padding: 1rem 0;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: visible; /* Ensure dropdown menus are not clipped */
 }
 
 .navbar-brand {
@@ -66,6 +67,11 @@ h6 {
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   overflow: hidden;
+}
+
+/* Ensure dropdown nav-link doesn't clip dropdown menu */
+.navbar-nav .nav-item.dropdown .nav-link {
+  overflow: visible;
 }
 
 .navbar-nav .nav-link::before {
@@ -125,6 +131,47 @@ h6 {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   margin-top: 0.5rem;
   animation: dropdownSlide 0.3s ease-out;
+  z-index: 9999 !important; /* Very high z-index to appear above all content */
+  position: absolute !important;
+}
+
+/* Ensure dropdown parent has proper stacking context */
+.navbar-nav .nav-item.dropdown {
+  position: relative;
+  z-index: 10000 !important;
+}
+
+/* Additional specificity for Bootstrap dropdown menus */
+.navbar .dropdown-menu,
+.nav .dropdown-menu,
+.dropdown .dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Ensure all dropdown containers have proper positioning */
+.dropdown,
+.nav-item.dropdown,
+.navbar-nav .dropdown {
+  position: relative !important;
+  z-index: 10000 !important;
+}
+
+/* Prevent body and container elements from interfering with dropdowns */
+body {
+  position: relative;
+}
+
+.container,
+.container-fluid {
+  position: relative;
+}
+
+/* Ensure dropdown menus appear above all cards and content */
+.dropdown-menu.show {
+  z-index: 99999 !important;
+  position: absolute !important;
+  display: block !important;
 }
 
 @keyframes dropdownSlide {
@@ -1592,19 +1639,19 @@ h6 {
     width: 35px;
     height: 35px;
   }
-  
+
   .subcategory-link {
     padding: 0.5rem;
   }
-  
+
   .subcategory-image-wrapper {
     margin-right: 0.5rem;
   }
-  
+
   .subcategory-name {
     font-size: 0.85rem;
   }
-  
+
   .subcategory-count {
     font-size: 0.7rem;
   }
@@ -1638,16 +1685,16 @@ h6 {
     height: 60px;
     border-radius: 12px;
   }
-  
+
   .category-image-wrapper {
     margin-right: 1rem !important;
   }
-  
+
   .category-header .d-flex {
     flex-direction: column;
     align-items: flex-start !important;
   }
-  
+
   .cart-info {
     margin-top: 1rem;
     align-self: flex-end;

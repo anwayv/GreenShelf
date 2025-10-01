@@ -6,12 +6,83 @@ import os
 import json
 import pickle
 import time
+import logging
 from datetime import datetime
 from flask_wtf.csrf import validate_csrf, CSRFError
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+try:
+    from webdriver_manager.chrome import ChromeDriverManager
+    WEBDRIVER_MANAGER_AVAILABLE = True
+except ImportError:
+    WEBDRIVER_MANAGER_AVAILABLE = False
 
 main = Blueprint("main", __name__)
+
+
+def create_chrome_driver(custom_options=None, headless=False):
+    """Helper function to create Chrome driver with enhanced error handling"""
+    options = Options()
+    
+    # Enhanced Chrome options for better reliability
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox") 
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-plugins")
+    options.add_argument("--disable-notifications")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-translate")
+    options.add_argument("--disable-logging")
+    options.add_argument("--disable-background-timer-throttling")
+    options.add_argument("--disable-backgrounding-occluded-windows")  
+    options.add_argument("--disable-renderer-backgrounding")
+    options.add_argument("--disable-features=TranslateUI")
+    options.add_argument("--remote-debugging-port=9222")
+    options.add_argument("--start-maximized")
+    options.add_argument("--log-level=3")
+    options.add_argument("--silent")
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    options.add_experimental_option('useAutomationExtension', False)
+    
+    # Add custom options if provided
+    if custom_options:
+        for arg in custom_options:
+            options.add_argument(arg)
+    
+    # Headless mode
+    if headless:
+        options.add_argument("--headless=new")
+        options.add_argument("--disable-software-rasterizer")
+    
+    try:
+        if WEBDRIVER_MANAGER_AVAILABLE:
+            service = Service(ChromeDriverManager().install())
+            return webdriver.Chrome(service=service, options=options)
+        else:
+            return webdriver.Chrome(options=options)
+    except Exception as e:
+        logging.error(f"Failed to create Chrome driver: {e}")
+        # Fallback with minimal options
+        fallback_options = Options()
+        fallback_options.add_argument("--no-sandbox")
+        fallback_options.add_argument("--disable-dev-shm-usage")
+        if headless:
+            fallback_options.add_argument("--headless=new")
+        if custom_options:
+            for arg in custom_options:
+                fallback_options.add_argument(arg)
+        
+        try:
+            if WEBDRIVER_MANAGER_AVAILABLE:
+                service = Service(ChromeDriverManager().install())
+                return webdriver.Chrome(service=service, options=fallback_options)
+            else:
+                return webdriver.Chrome(options=fallback_options)
+        except Exception as e2:
+            logging.error(f"Failed to create fallback Chrome driver: {e2}")
+            raise e2
 
 @main.route("/")
 def index():
@@ -273,13 +344,13 @@ def save_cookies():
         return render_template("cookies/save.html")
     
     try:
-        # Start Chrome browser for manual login
-        options = Options()
-        options.add_argument("--start-maximized")
-        options.add_argument(r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile")
-        options.add_argument(r"--profile-directory=Automation")
+        # Start Chrome browser for manual login using enhanced driver
+        custom_options = [
+            r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile",
+            r"--profile-directory=Automation"
+        ]
         
-        driver = webdriver.Chrome(options=options)
+        driver = create_chrome_driver(custom_options=custom_options, headless=False)
         
         # Open Blinkit and allow manual login
         driver.get("https://www.blinkit.com")
@@ -422,19 +493,13 @@ def run_grocery_ordering(grocery_list, headless_mode, cookies_file, upi_id):
         "Britannia Pav": "https://blinkit.com/prn/britannia-pav/prid/366180"
     }
     
-    # Use exact same Chrome options as original app.py
-    options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
-    options.add_argument(r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile")
-    options.add_argument(r"--profile-directory=Automation")
+    # Use enhanced Chrome driver with profile options
+    custom_options = [
+        r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile",
+        r"--profile-directory=Automation"
+    ]
     
-    if headless_mode:
-        options.add_argument("--headless=new")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-    
-    driver = webdriver.Chrome(options=options)
+    driver = create_chrome_driver(custom_options=custom_options, headless=headless_mode)
     wait = WebDriverWait(driver, 15)
     results = []
     

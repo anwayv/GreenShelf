@@ -131,12 +131,12 @@
       </div>
     </div>
 
-    <!-- Shop by Categories Section -->
+    <!-- Shop by Categories Section with Scrollbar -->
     <div class="card mt-4">
       <div class="card-header">
         <span><i class="fas fa-th-large me-2"></i>Add by Categories</span>
       </div>
-      <div class="card-body">
+      <div class="card-body categories-scrollable">
         <div class="row g-3" id="categoriesGrid">
           <!-- Categories will be loaded here dynamically -->
         </div>
@@ -227,36 +227,38 @@
     </div>
 
     <div class="card mt-4">
-      <div class="card-header">Quick Actions</div>
+      <div class="card-header">
+        <span><i class="fas fa-bolt me-2"></i>Quick Actions</span>
+      </div>
       <div class="card-body">
-        <div class="d-grid gap-2">
+        <div class="d-grid gap-3">
           <a
             href="{{ url_for('recipes.index') }}"
-            class="btn btn-outline-primary"
+            class="btn btn-primary quick-action-btn"
           >
             <i class="fas fa-book me-2"></i>Browse Recipes
           </a>
           <a
             href="{{ url_for('meal_planning.shopping_list') }}"
-            class="btn btn-outline-info"
+            class="btn btn-info quick-action-btn"
           >
             <i class="fas fa-list me-2"></i>Shopping List
           </a>
           <a
             href="{{ url_for('main.grocery_order') }}"
-            class="btn btn-outline-success"
+            class="btn btn-success quick-action-btn"
           >
             <i class="fas fa-shopping-cart me-2"></i>Grocery Order
           </a>
           <a
             href="{{ url_for('main.save_cookies') }}"
-            class="btn btn-outline-warning"
+            class="btn btn-warning quick-action-btn"
           >
             <i class="fas fa-cookie-bite me-2"></i>Cookie Management
           </a>
           <a
             href="{{ url_for('auth.profile') }}"
-            class="btn btn-outline-secondary"
+            class="btn btn-secondary quick-action-btn"
           >
             <i class="fas fa-user-cog me-2"></i>Profile Settings
           </a>
@@ -427,10 +429,6 @@
   }
 
   /* Fix overlapping issues */
-  .card-body {
-    overflow: hidden;
-  }
-
   .table-responsive {
     overflow-x: auto;
   }

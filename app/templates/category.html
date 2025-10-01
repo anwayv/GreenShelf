@@ -25,7 +25,12 @@
             <div class="d-flex justify-content-between align-items-center">
               <div class="d-flex align-items-center">
                 <div class="category-image-wrapper me-4">
-                  <img id="categoryHeaderImage" src="" alt="{{ category }}" class="category-header-image" />
+                  <img
+                    id="categoryHeaderImage"
+                    src=""
+                    alt="{{ category }}"
+                    class="category-header-image"
+                  />
                 </div>
                 <div>
                   <h2 class="mb-2">{{ category }}</h2>
@@ -125,12 +130,12 @@
   async function loadCategoryProducts() {
     try {
       showLoading(true);
-      
+
       // Set category header image
-      const categoryImage = document.getElementById('categoryHeaderImage');
-      const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '%20');
+      const categoryImage = document.getElementById("categoryHeaderImage");
+      const categorySlug = categoryName.toLowerCase().replace(/\s+/g, "%20");
       categoryImage.src = `/static/images/categories/${categorySlug}.png`;
-      
+
       const response = await fetch("/static/products.json");
       const products = await response.json();
 
@@ -199,13 +204,22 @@
       if (subcategory === "all") {
         return `/static/images/categories/${category.toLowerCase()}.png`;
       }
-      
-      const categorySlug = category.toLowerCase().replace(/\s+/g, '-').replace(/[&,]/g, '');
-      const subcategorySlug = subcategory.toLowerCase().replace(/\s+/g, '-').replace(/[&,]/g, '');
+
+      const categorySlug = category
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[&,]/g, "");
+      const subcategorySlug = subcategory
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[&,]/g, "");
       return `/static/images/subcategories/${categorySlug}/${subcategorySlug}.jpg`;
     };
 
-    const subcategoryImage = getSubcategoryImage(value === "all" ? categoryName : value, categoryName);
+    const subcategoryImage = getSubcategoryImage(
+      value === "all" ? categoryName : value,
+      categoryName
+    );
 
     item.innerHTML = `
       <div class="subcategory-link">
