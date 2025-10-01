@@ -1,0 +1,550 @@
+{% extends 'layout.html' %} {% block title %}Shopping List - Green Shelf{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-cart me-2"></i>Smart Shopping List</h2>
+        <div>
+          <a
+            href="{{ url_for('meal_planning.index') }}"
+            class="btn btn-outline-secondary me-2"
+          >
+            <i class="fas fa-calendar me-1"></i>Back to Meal Plan
+          </a>
+          {% if shopping_items %}
+          <button
+            class="btn btn-success"
+            id="orderAllBtn"
+            {%
+            if
+            not
+            current_user.auto_order_enabled
+            or
+            not
+            current_user.cookies_saved
+            %}disabled{%
+            endif
+            %}
+          >
+            <i class="fas fa-shopping-cart me-1"></i>Order All Items
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if shopping_items %}
+  <div class="row g-4">
+    <!-- Shopping List Items -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Items Needed
+            <span class="badge bg-primary">{{ shopping_items|length }}</span>
+          </h5>
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="selectAllToggle"
+            />
+            <label class="form-check-label" for="selectAllToggle"
+              >Select All</label
+            >
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for item in shopping_items %}
+            <div class="list-group-item">
+              <div class="row align-items-center">
+                <div class="col-1">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input item-checkbox"
+                      type="checkbox"
+                      id="item-{{ loop.index }}"
+                      data-item="{{ item.name }}"
+                      data-quantity="{{ item.needed }}"
+                      data-unit="{{ item.unit }}"
+                      data-query="{{ item.query }}"
+                    />
+                  </div>
+                </div>
+                <div class="col-7">
+                  <div class="d-flex align-items-center">
+                    <div>
+                      <h6 class="mb-1">{{ item.name }}</h6>
+                      <div class="text-muted small">
+                        <i class="fas fa-search me-1"></i>Search: "{{ item.query
+                        }}"
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-2 text-center">
+                  <div class="fw-bold text-primary">
+                    {{ item.needed }} {{ item.unit }}
+                  </div>
+                  <div class="small text-muted">Needed</div>
+                </div>
+                <div class="col-2 text-end">
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="orderSingleItem('{{ item.name }}', {{ item.needed }}, '{{ item.unit }}', '{{ item.query }}')"
+                    {%
+                    if
+                    not
+                    current_user.auto_order_enabled
+                    or
+                    not
+                    current_user.cookies_saved
+                    %}disabled{%
+                    endif
+                    %}
+                  >
+                    <i class="fas fa-cart-plus"></i> Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary & Settings -->
+    <div class="col-lg-4">
+      <!-- Order Summary -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Summary</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Total Items:</span>
+            <span class="fw-bold" id="totalItems"
+              >{{ shopping_items|length }}</span
+            >
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Selected:</span>
+            <span class="fw-bold text-primary" id="selectedItems">0</span>
+          </div>
+          <hr />
+          <div id="selectedItemsList" class="small text-muted">
+            No items selected
+          </div>
+        </div>
+      </div>
+
+      <!-- Auto-Order Settings -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-cog me-2"></i>Auto-Order Settings
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="autoOrderToggle"
+                {%
+                if
+                current_user.auto_order_enabled
+                %}checked{%
+                endif
+                %}
+              />
+              <label class="form-check-label" for="autoOrderToggle">
+                Auto-Order Enabled
+              </label>
+            </div>
+            <small class="text-muted"
+              >Automatically order missing ingredients</small
+            >
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="checkoutToggle"
+                {%
+                if
+                current_user.checkout_enabled
+                %}checked{%
+                endif
+                %}
+              />
+              <label class="form-check-label" for="checkoutToggle">
+                Auto-Checkout
+              </label>
+            </div>
+            <small class="text-muted">Automatically complete purchases</small>
+          </div>
+
+          <div class="alert alert-info small">
+            <i class="fas fa-info-circle me-1"></i>
+            {% if not current_user.cookies_saved %}
+            <strong>Setup Required:</strong> Save your Blinkit cookies in
+            settings to enable ordering. {% else %} Your Blinkit integration is
+            active and ready for orders. {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-zap me-2"></i>Quick Actions</h6>
+        </div>
+        <div class="card-body d-grid gap-2">
+          <button
+            class="btn btn-outline-primary"
+            onclick="refreshShoppingList()"
+          >
+            <i class="fas fa-sync-alt me-1"></i>Refresh List
+          </button>
+          <a href="{{ url_for('recipes.index') }}" class="btn btn-outline-info">
+            <i class="fas fa-book me-1"></i>Browse Recipes
+          </a>
+          <a
+            href="{{ url_for('auth.profile') }}"
+            class="btn btn-outline-secondary"
+          >
+            <i class="fas fa-user-cog me-1"></i>Order Settings
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Empty State -->
+  <div class="row">
+    <div class="col-12">
+      <div class="text-center py-5">
+        <div class="mb-4">
+          <i
+            class="fas fa-check-circle text-success"
+            style="font-size: 4rem"
+          ></i>
+        </div>
+        <h4 class="text-success">All Set! 🎉</h4>
+        <p class="text-muted mb-4">
+          You have all the ingredients you need for your planned meals this
+          week. No shopping required!
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+          <a
+            href="{{ url_for('meal_planning.index') }}"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-calendar me-1"></i>View Meal Plan
+          </a>
+          <a
+            href="{{ url_for('meal_planning.add') }}"
+            class="btn btn-outline-success"
+          >
+            <i class="fas fa-plus me-1"></i>Plan More Meals
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .item-checkbox:checked ~ * {
+    opacity: 0.7;
+  }
+
+  .card-header {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-bottom: 1px solid rgba(13, 110, 253, 0.2);
+  }
+
+  .list-group-item {
+    transition: all 0.2s ease;
+  }
+
+  .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+  }
+
+  .alert-info {
+    background-color: rgba(13, 202, 240, 0.1);
+    border-color: rgba(13, 202, 240, 0.2);
+    color: #055160;
+  }
+</style>
+
+<script>
+  // Initialize shopping list functionality
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeShoppingList();
+  });
+
+  function initializeShoppingList() {
+    // Select all toggle
+    const selectAllToggle = document.getElementById("selectAllToggle");
+    const itemCheckboxes = document.querySelectorAll(".item-checkbox");
+
+    if (selectAllToggle) {
+      selectAllToggle.addEventListener("change", function () {
+        itemCheckboxes.forEach((checkbox) => {
+          checkbox.checked = this.checked;
+        });
+        updateOrderSummary();
+      });
+    }
+
+    // Individual item checkboxes
+    itemCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", function () {
+        updateOrderSummary();
+
+        // Update select all toggle
+        const allChecked = Array.from(itemCheckboxes).every((cb) => cb.checked);
+        const someChecked = Array.from(itemCheckboxes).some((cb) => cb.checked);
+
+        if (selectAllToggle) {
+          selectAllToggle.checked = allChecked;
+          selectAllToggle.indeterminate = someChecked && !allChecked;
+        }
+      });
+    });
+
+    // Auto-order toggles
+    const autoOrderToggle = document.getElementById("autoOrderToggle");
+    const checkoutToggle = document.getElementById("checkoutToggle");
+
+    if (autoOrderToggle) {
+      autoOrderToggle.addEventListener("change", function () {
+        updateUserPreference("auto_order_enabled", this.checked);
+      });
+    }
+
+    if (checkoutToggle) {
+      checkoutToggle.addEventListener("change", function () {
+        updateUserPreference("checkout_enabled", this.checked);
+      });
+    }
+
+    // Order all button
+    const orderAllBtn = document.getElementById("orderAllBtn");
+    if (orderAllBtn) {
+      orderAllBtn.addEventListener("click", orderAllItems);
+    }
+
+    // Initial summary update
+    updateOrderSummary();
+  }
+
+  function updateOrderSummary() {
+    const checkedBoxes = document.querySelectorAll(".item-checkbox:checked");
+    const selectedItems = document.getElementById("selectedItems");
+    const selectedItemsList = document.getElementById("selectedItemsList");
+
+    if (selectedItems) {
+      selectedItems.textContent = checkedBoxes.length;
+    }
+
+    if (selectedItemsList) {
+      if (checkedBoxes.length === 0) {
+        selectedItemsList.innerHTML = "<em>No items selected</em>";
+      } else {
+        let html = "<div><strong>Selected items:</strong></div>";
+        checkedBoxes.forEach((checkbox) => {
+          const itemName = checkbox.dataset.item;
+          const quantity = checkbox.dataset.quantity;
+          const unit = checkbox.dataset.unit;
+          html += `<div class="small">• ${itemName} (${quantity} ${unit})</div>`;
+        });
+        selectedItemsList.innerHTML = html;
+      }
+    }
+  }
+
+  function orderSingleItem(itemName, quantity, unit, query) {
+    if (!confirm(`Add ${quantity} ${unit} of ${itemName} to cart?`)) return;
+
+    const orderBtn = event.target;
+    const originalText = orderBtn.innerHTML;
+    orderBtn.disabled = true;
+    orderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+    fetch("/meal-planning/auto-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content"),
+      },
+      body: JSON.stringify({
+        item_name: itemName,
+        quantity: parseFloat(quantity),
+        unit: unit,
+        query: query,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          orderBtn.innerHTML = '<i class="fas fa-check"></i> Added!';
+          orderBtn.classList.remove("btn-outline-primary");
+          orderBtn.classList.add("btn-success");
+
+          // Show success message
+          showToast(`${itemName} added to cart successfully!`, "success");
+        } else {
+          throw new Error(data.error || "Failed to add item");
+        }
+      })
+      .catch((error) => {
+        console.error("Error ordering item:", error);
+        orderBtn.disabled = false;
+        orderBtn.innerHTML = originalText;
+        showToast(`Error adding ${itemName}: ${error.message}`, "error");
+      });
+  }
+
+  function orderAllItems() {
+    const checkedBoxes = document.querySelectorAll(".item-checkbox:checked");
+
+    if (checkedBoxes.length === 0) {
+      alert("Please select items to order");
+      return;
+    }
+
+    if (!confirm(`Order ${checkedBoxes.length} selected items?`)) return;
+
+    const orderAllBtn = document.getElementById("orderAllBtn");
+    const originalText = orderAllBtn.innerHTML;
+    orderAllBtn.disabled = true;
+    orderAllBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> Ordering...';
+
+    const items = Array.from(checkedBoxes).map((checkbox) => ({
+      item_name: checkbox.dataset.item,
+      quantity: parseFloat(checkbox.dataset.quantity),
+      unit: checkbox.dataset.unit,
+      query: checkbox.dataset.query,
+    }));
+
+    fetch("/meal-planning/auto-order-bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content"),
+      },
+      body: JSON.stringify({ items: items }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          orderAllBtn.innerHTML = '<i class="fas fa-check"></i> All Ordered!';
+          orderAllBtn.classList.remove("btn-success");
+          orderAllBtn.classList.add("btn-outline-success");
+
+          // Mark ordered items as completed
+          checkedBoxes.forEach((checkbox) => {
+            const row = checkbox.closest(".list-group-item");
+            row.style.opacity = "0.5";
+            const btn = row.querySelector("button");
+            btn.innerHTML = '<i class="fas fa-check"></i> Ordered';
+            btn.classList.remove("btn-outline-primary");
+            btn.classList.add("btn-success");
+            btn.disabled = true;
+          });
+
+          showToast(
+            `Successfully ordered ${checkedBoxes.length} items!`,
+            "success"
+          );
+        } else {
+          throw new Error(data.error || "Failed to order items");
+        }
+      })
+      .catch((error) => {
+        console.error("Error ordering items:", error);
+        orderAllBtn.disabled = false;
+        orderAllBtn.innerHTML = originalText;
+        showToast(`Error ordering items: ${error.message}`, "error");
+      });
+  }
+
+  function updateUserPreference(key, value) {
+    fetch("/auth/update-preference", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute("content"),
+      },
+      body: JSON.stringify({
+        [key]: value,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showToast(`${key.replace("_", " ")} updated successfully!`, "info");
+        } else {
+          throw new Error(data.error || "Failed to update preference");
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating preference:", error);
+        showToast(`Error updating preference: ${error.message}`, "error");
+      });
+  }
+
+  function refreshShoppingList() {
+    location.reload();
+  }
+
+  function showToast(message, type = "info") {
+    // Create toast notification
+    const toast = document.createElement("div");
+    toast.className = `alert alert-${
+      type === "error" ? "danger" : type
+    } alert-dismissible fade show position-fixed`;
+    toast.style.cssText =
+      "top: 20px; right: 20px; z-index: 1050; min-width: 300px;";
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 5000);
+  }
+</script>
+{% endblock %}

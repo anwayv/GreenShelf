@@ -35,6 +35,54 @@ def create_app():
     with app.app_context():
         db.create_all()
     
+    # Custom template filters
+    from datetime import datetime
+    
+    @app.template_filter('days_since')
+    def days_since_filter(date):
+        """Calculate days since a given date"""
+        if not date:
+            return 0
+        delta = datetime.now() - date
+        return delta.days
+    
+    @app.template_filter('format_date')
+    def format_date_filter(date, format='%B %d, %Y'):
+        """Format a date with custom format"""
+        if not date:
+            return 'N/A'
+        return date.strftime(format)
+    
+    @app.template_filter('time_ago')
+    def time_ago_filter(date):
+        """Show time ago in human readable format"""
+        if not date:
+            return 'Never'
+        
+        delta = datetime.now() - date
+        days = delta.days
+        seconds = delta.seconds
+        
+        if days > 0:
+            if days == 1:
+                return '1 day ago'
+            elif days < 30:
+                return f'{days} days ago'
+            elif days < 365:
+                months = days // 30
+                return f'{months} month{"s" if months > 1 else ""} ago'
+            else:
+                years = days // 365
+                return f'{years} year{"s" if years > 1 else ""} ago'
+        elif seconds > 3600:
+            hours = seconds // 3600
+            return f'{hours} hour{"s" if hours > 1 else ""} ago'
+        elif seconds > 60:
+            minutes = seconds // 60
+            return f'{minutes} minute{"s" if minutes > 1 else ""} ago'
+        else:
+            return 'Just now'
+    
     # Register blueprints
     from app.routes import main
     from app.auth import auth_bp

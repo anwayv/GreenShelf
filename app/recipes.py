@@ -91,6 +91,24 @@ def view(id):
     recipe = Recipe.query.filter_by(id=id, user_id=current_user.id).first_or_404()
     return render_template('recipes/view.html', recipe=recipe)
 
+@recipes_bp.route('/<int:id>/details')
+@login_required
+def details(id):
+    """Get recipe details as JSON for AJAX calls"""
+    recipe = Recipe.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    return jsonify({
+        'id': recipe.id,
+        'name': recipe.name,
+        'description': recipe.description,
+        'prep_time': recipe.prep_time,
+        'cook_time': recipe.cook_time,
+        'servings': recipe.servings,
+        'category': recipe.category,
+        'difficulty': recipe.difficulty,
+        'ingredients': recipe.get_ingredients(),
+        'tags': recipe.get_tags()
+    })
+
 @recipes_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(id):

@@ -181,3 +181,36 @@ def capture_cookies():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 400
 
+@auth_bp.route('/update-preference', methods=['POST'])
+@login_required
+def update_preference():
+    """Update user preferences via AJAX"""
+    try:
+        data = request.get_json()
+        
+        # Update allowed preferences
+        allowed_preferences = [
+            'auto_order_enabled', 'checkout_enabled', 'check_interval_minutes',
+            'family_size', 'upi_id', 'pincode'
+        ]
+        
+        updated = []
+        for key, value in data.items():
+            if key in allowed_preferences:
+                setattr(current_user, key, value)
+                updated.append(key)
+        
+        if updated:
+            db.session.commit()
+            return jsonify({
+                'success': True, 
+                'message': f'Updated {", ".join(updated)}',
+                'updated': updated
+            })
+        else:
+            return jsonify({'success': False, 'message': 'No valid preferences provided'}), 400
+            
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
