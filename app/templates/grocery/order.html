@@ -1,176 +1,1132 @@
-{% extends 'layout.html' %} {% block title %}Grocery Order - Green Shelf{%
+{% extends 'layout.html' %} {% block title %}Smart Grocery Order - Green Shelf{%
 endblock %} {% block content %}
-<div class="row justify-content-center">
-  <div class="col-12 col-md-8 col-lg-6">
-    <div class="card">
-      <div class="card-header">
-        <h4 class="mb-0">
-          <i class="fas fa-shopping-cart me-2"></i>Place Grocery Order
-        </h4>
-      </div>
-      <div class="card-body">
-        <div class="alert alert-info">
-          <h6><i class="fas fa-info-circle me-2"></i>How it works:</h6>
-          <ol class="mb-0">
-            <li>Enter your grocery list (one item per line)</li>
-            <li>Provide your UPI ID for payment</li>
-            <li>
-              Click "Place Order" to automatically add items to Blinkit cart
-            </li>
-            <li>Approve payment in your UPI app when prompted</li>
-          </ol>
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <!-- Main Content -->
+    <div class="col-lg-10 col-xl-8">
+      <div class="enhanced-card">
+        <div class="enhanced-card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="mb-1">
+                <i class="fas fa-shopping-cart me-2 text-success"></i>Smart
+                Grocery Order
+              </h3>
+              <p class="text-muted mb-0">
+                Automated ordering with intelligent product matching
+              </p>
+            </div>
+            <div class="status-indicator">
+              <span
+                class="badge bg-{% if current_user.cookies_saved %}success{% else %}warning{% endif %} px-3 py-2"
+              >
+                <i
+                  class="fas fa-{% if current_user.cookies_saved %}check-circle{% else %}exclamation-triangle{% endif %} me-1"
+                ></i>
+                {% if current_user.cookies_saved %}Ready to Order{% else %}Setup
+                Required{% endif %}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {% if not current_user.cookies_saved %}
-        <div class="alert alert-warning">
-          <i class="fas fa-exclamation-triangle me-2"></i>
-          <strong>Cookies Required:</strong> You need to save your Blinkit login
-          cookies first to place orders automatically.
+        <div class="enhanced-card-body">
+          <!-- Progress Steps -->
+          <div class="progress-steps mb-4">
+            <div
+              class="step {% if current_user.cookies_saved %}completed{% else %}active{% endif %}"
+            >
+              <div class="step-icon">
+                <i class="fas fa-cookie-bite"></i>
+              </div>
+              <div class="step-content">
+                <h6>Setup Cookies</h6>
+                <small>Connect your Blinkit account</small>
+              </div>
+            </div>
+            <div
+              class="step {% if current_user.cookies_saved %}active{% endif %}"
+            >
+              <div class="step-icon">
+                <i class="fas fa-list"></i>
+              </div>
+              <div class="step-content">
+                <h6>Create List</h6>
+                <small>Add your grocery items</small>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-icon">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+              <div class="step-content">
+                <h6>Auto Order</h6>
+                <small>Let AI handle the rest</small>
+              </div>
+            </div>
+          </div>
+
+          {% if not current_user.cookies_saved %}
+          <div class="setup-required mb-4">
+            <div class="setup-card">
+              <div class="setup-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="setup-content">
+                <h5>Setup Required</h5>
+                <p>Connect your Blinkit account to enable automated ordering</p>
+                <a
+                  href="{{ url_for('main.save_cookies') }}"
+                  class="btn btn-warning"
+                >
+                  <i class="fas fa-cookie-bite me-2"></i>Connect Blinkit Account
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %} {% if not current_user.cookies_saved %}
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Cookies Required:</strong> You need to save your Blinkit
+            login cookies first to place orders automatically.
+            <a
+              href="{{ url_for('main.save_cookies') }}"
+              class="btn btn-sm btn-warning ms-2"
+            >
+              <i class="fas fa-cookie-bite me-1"></i>Save Cookies
+            </a>
+          </div>
+          {% endif %}
+
+          <form method="POST" id="groceryOrderForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <!-- Smart Grocery List Input -->
+            <div class="smart-input-section">
+              <div class="input-header">
+                <label for="grocery_list" class="form-label">
+                  <i class="fas fa-list-ul me-2"></i
+                  ><strong>Smart Grocery List</strong>
+                </label>
+                <div class="input-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    id="addSuggestedItems"
+                  >
+                    <i class="fas fa-magic me-1"></i>Add Suggestions
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    id="clearList"
+                  >
+                    <i class="fas fa-trash me-1"></i>Clear
+                  </button>
+                </div>
+              </div>
+
+              <div class="smart-textarea-wrapper">
+                <textarea
+                  name="grocery_list"
+                  id="grocery_list"
+                  class="smart-textarea"
+                  rows="8"
+                  placeholder="Enter your grocery items here, one per line:&#10;&#10;🥛 Milk & Dairy:&#10;amul milk 500ml&#10;gokul full cream milk&#10;&#10;🍞 Bakery:&#10;english oven sandwich white bread&#10;&#10;💡 Pro tip: Be specific with product names for better results!"
+                  required
+                  {%
+                  if
+                  not
+                  current_user.cookies_saved
+                  %}disabled{%
+                  endif
+                  %}
+                ></textarea>
+                <div class="textarea-footer">
+                  <div class="item-counter">
+                    <span id="itemCount">0</span> items •
+                    <span id="charCount">0</span> characters
+                  </div>
+                  <div class="validation-status" id="validationStatus">
+                    <i class="fas fa-info-circle text-muted"></i>
+                    <span>Start typing to see validation</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Product Suggestions Panel -->
+            <div
+              class="suggestions-panel"
+              id="suggestionsPanel"
+              style="display: none"
+            >
+              <div class="suggestions-header">
+                <h6><i class="fas fa-lightbulb me-2"></i>Popular Items</h6>
+                <button
+                  type="button"
+                  class="btn-close"
+                  id="closeSuggestions"
+                ></button>
+              </div>
+              <div class="suggestions-grid">
+                <div class="suggestion-category">
+                  <h6>🥛 Dairy & Milk</h6>
+                  <div class="suggestion-items">
+                    <span class="suggestion-tag" data-item="amul milk 500ml"
+                      >Amul Milk 500ml</span
+                    >
+                    <span
+                      class="suggestion-tag"
+                      data-item="gokul full cream milk"
+                      >Gokul Full Cream</span
+                    >
+                    <span
+                      class="suggestion-tag"
+                      data-item="mother dairy cow milk"
+                      >Mother Dairy Cow</span
+                    >
+                    <span class="suggestion-tag" data-item="amul salted butter"
+                      >Amul Butter</span
+                    >
+                  </div>
+                </div>
+                <div class="suggestion-category">
+                  <h6>🍞 Bakery</h6>
+                  <div class="suggestion-items">
+                    <span
+                      class="suggestion-tag"
+                      data-item="english oven sandwich white bread"
+                      >White Bread</span
+                    >
+                    <span class="suggestion-tag" data-item="britannia bread"
+                      >Britannia Bread</span
+                    >
+                    <span class="suggestion-tag" data-item="harvest gold bread"
+                      >Harvest Gold</span
+                    >
+                  </div>
+                </div>
+                <div class="suggestion-category">
+                  <h6>🥣 Breakfast</h6>
+                  <div class="suggestion-items">
+                    <span class="suggestion-tag" data-item="corn flakes"
+                      >Corn Flakes</span
+                    >
+                    <span class="suggestion-tag" data-item="oats">Oats</span>
+                    <span class="suggestion-tag" data-item="chocos"
+                      >Chocos</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Configuration -->
+            <div class="payment-config-section">
+              <div class="config-header">
+                <h6>
+                  <i class="fas fa-credit-card me-2"></i>Payment Configuration
+                </h6>
+              </div>
+              <div class="payment-input-wrapper">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-mobile-alt"></i>
+                  </span>
+                  <input
+                    type="text"
+                    name="upi_id"
+                    id="upi_id"
+                    class="form-control payment-input"
+                    placeholder="your@upi"
+                    value="{{ current_user.upi_id or '' }}"
+                    required
+                    {%
+                    if
+                    not
+                    current_user.cookies_saved
+                    %}disabled{%
+                    endif
+                    %}
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    id="validateUpi"
+                  >
+                    <i class="fas fa-check"></i>
+                  </button>
+                </div>
+                <div class="payment-help">
+                  <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Supported: @paytm, @googlepay, @phonepe, @ybl, @upi
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Automation Settings -->
+            <div class="automation-settings-section">
+              <div class="settings-header">
+                <h6><i class="fas fa-cog me-2"></i>Automation Settings</h6>
+              </div>
+              <div class="settings-grid">
+                <div class="setting-item">
+                  <div class="setting-control">
+                    <input
+                      type="checkbox"
+                      class="form-check-input setting-checkbox"
+                      id="headless"
+                      name="headless"
+                      value="1"
+                      checked
+                      {%
+                      if
+                      not
+                      current_user.cookies_saved
+                      %}disabled{%
+                      endif
+                      %}
+                    />
+                    <label
+                      class="form-check-label setting-label"
+                      for="headless"
+                    >
+                      <div class="setting-info">
+                        <div class="setting-title">
+                          <i class="fas fa-eye-slash me-2"></i>Headless Mode
+                        </div>
+                        <div class="setting-description">
+                          Faster processing, browser runs in background
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                  <div class="setting-badge">
+                    <span class="badge bg-success">Recommended</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Action Section -->
+            <div class="order-action-section">
+              <div class="action-summary">
+                <div class="summary-info">
+                  <h5 class="text-success mb-1">
+                    <i class="fas fa-check-circle me-2"></i>Ready to Order
+                  </h5>
+                  <p class="text-muted mb-2">
+                    Your grocery list will be automatically processed through
+                    Blinkit
+                  </p>
+                  <div class="order-stats">
+                    <div class="stat-item">
+                      <i class="fas fa-clock text-primary"></i>
+                      <span>Est. 5-10 minutes</span>
+                    </div>
+                    <div class="stat-item">
+                      <i class="fas fa-shield-alt text-success"></i>
+                      <span>Secure automation</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="action-buttons">
+                  <button
+                    type="submit"
+                    class="btn btn-success btn-lg primary-action"
+                    {%
+                    if
+                    not
+                    current_user.cookies_saved
+                    %}disabled{%
+                    endif
+                    %}
+                  >
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    <span class="button-text">Start Ordering</span>
+                    <div class="loading-spinner" style="display: none">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-lg"
+                    id="previewOrder"
+                  >
+                    <i class="fas fa-eye me-2"></i>Preview
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          {% if current_user.cookies_saved %}
+          <div class="mt-4">
+            <div class="alert alert-success">
+              <h6><i class="fas fa-check-circle me-2"></i>Ready to Order!</h6>
+              <p class="mb-0">
+                Your Blinkit cookies are saved. Orders will be placed
+                automatically.
+              </p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="card-footer">
           <a
-            href="{{ url_for('main.save_cookies') }}"
-            class="btn btn-sm btn-warning ms-2"
+            href="{{ url_for('main.index') }}"
+            class="btn btn-outline-secondary"
           >
-            <i class="fas fa-cookie-bite me-1"></i>Save Cookies
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
           </a>
         </div>
-        {% endif %}
-
-        <form method="POST">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-          <div class="mb-3">
-            <label for="grocery_list" class="form-label">
-              <strong>Grocery List</strong>
-              <small class="text-muted">(One item per line)</small>
-            </label>
-            <textarea
-              name="grocery_list"
-              id="grocery_list"
-              class="form-control"
-              rows="8"
-              placeholder="Enter your grocery items here, one per line:&#10;amul milk 500ml&#10;english oven sandwich white bread&#10;gokul full cream milk&#10;mother dairy cow milk"
-              required
-              {%
-              if
-              not
-              current_user.cookies_saved
-              %}disabled{%
-              endif
-              %}
-            ></textarea>
-            <div class="form-text">
-              Enter each item on a new line. Use exact product names for best
-              results.
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="upi_id" class="form-label">
-              <strong>UPI ID</strong>
-            </label>
-            <input
-              type="text"
-              name="upi_id"
-              id="upi_id"
-              class="form-control"
-              placeholder="your@upi"
-              value="{{ current_user.upi_id or '' }}"
-              required
-              {%
-              if
-              not
-              current_user.cookies_saved
-              %}disabled{%
-              endif
-              %}
-            />
-            <div class="form-text">
-              Your UPI ID for payment (e.g., yourname@paytm, yourname@googlepay)
-            </div>
-          </div>
-
-          <div class="mb-3 form-check">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="headless"
-              name="headless"
-              value="1"
-              checked
-              {%
-              if
-              not
-              current_user.cookies_saved
-              %}disabled{%
-              endif
-              %}
-            />
-            <label class="form-check-label" for="headless">
-              Run in Headless Mode (Faster, Browser won't be visible)
-            </label>
-            <div class="form-text">
-              Recommended for faster processing. Uncheck to see the browser in
-              action.
-            </div>
-          </div>
-
-          <div class="d-grid gap-2">
-            <button
-              type="submit"
-              class="btn btn-success btn-lg"
-              {%
-              if
-              not
-              current_user.cookies_saved
-              %}disabled{%
-              endif
-              %}
-            >
-              <i class="fas fa-shopping-cart me-2"></i>Place Order on Blinkit
-            </button>
-          </div>
-        </form>
-
-        {% if current_user.cookies_saved %}
-        <div class="mt-4">
-          <div class="alert alert-success">
-            <h6><i class="fas fa-check-circle me-2"></i>Ready to Order!</h6>
-            <p class="mb-0">
-              Your Blinkit cookies are saved. Orders will be placed
-              automatically.
-            </p>
-          </div>
-        </div>
-        {% endif %}
-      </div>
-      <div class="card-footer">
-        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-        </a>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const textarea = document.getElementById('grocery_list');
-      const upiInput = document.getElementById('upi_id');
-      const headlessCheckbox = document.getElementById('headless');
+  <style>
+    /* Enhanced Card Styles */
+    .enhanced-card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border: none;
+      overflow: hidden;
+      margin-bottom: 2rem;
+      position: relative;
+    }
 
-      // Auto-resize textarea
-      if (textarea) {
-          textarea.addEventListener('input', function() {
-              this.style.height = 'auto';
-              this.style.height = (this.scrollHeight) + 'px';
-          });
+    .enhanced-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #28a745, #20c997, #17a2b8, #007bff);
+      z-index: 1;
+    }
+
+    .enhanced-card-header {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      padding: 2rem;
+      border: none;
+    }
+
+    .enhanced-card-header h3 {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .enhanced-card-body {
+      padding: 2rem;
+    }
+
+    .status-indicator .badge {
+      font-size: 0.9rem;
+      border-radius: 25px;
+    }
+
+    /* Progress Steps */
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 15px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .progress-steps::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: #dee2e6;
+      z-index: 1;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+    }
+
+    .step-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #dee2e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .step.active .step-icon {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+      color: white;
+    }
+
+    .step.completed .step-icon {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+    }
+
+    .step-content h6 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .step-content small {
+      color: #6c757d;
+      font-size: 0.8rem;
+    }
+
+    /* Setup Required Section */
+    .setup-required {
+      margin-bottom: 2rem;
+    }
+
+    .setup-card {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      border: 2px solid #f6c23e;
+      border-radius: 15px;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .setup-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f6c23e 0%, #e0a800 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    .setup-content h5 {
+      margin: 0 0 0.5rem 0;
+      color: #856404;
+      font-weight: 600;
+    }
+
+    .setup-content p {
+      margin: 0 0 1rem 0;
+      color: #856404;
+    }
+
+    /* Enhanced Grocery Order Styles */
+    .smart-input-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border: 2px dashed #e9ecef;
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .smart-input-section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #28a745, transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .smart-input-section:hover::before {
+      opacity: 1;
+    }
+
+    .smart-input-section:hover {
+      border-color: #28a745;
+      background: linear-gradient(135deg, #f8fff9 0%, #ffffff 100%);
+    }
+
+    .input-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .smart-textarea-wrapper {
+      position: relative;
+    }
+
+    .smart-textarea {
+      width: 100%;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 120px;
+      transition: all 0.3s ease;
+      background: #ffffff;
+    }
+
+    .smart-textarea:focus {
+      border-color: #28a745;
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+      outline: none;
+    }
+
+    .textarea-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .item-counter {
+      color: #6c757d;
+    }
+
+    .validation-status {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .suggestions-panel {
+      background: #ffffff;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .suggestions-header {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .suggestions-grid {
+      padding: 1.5rem;
+    }
+
+    .suggestion-category {
+      margin-bottom: 1.5rem;
+    }
+
+    .suggestion-category:last-child {
+      margin-bottom: 0;
+    }
+
+    .suggestion-category h6 {
+      color: #495057;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+
+    .suggestion-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .suggestion-tag {
+      background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+      border: 1px solid #dee2e6;
+      border-radius: 20px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .suggestion-tag:hover {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .payment-config-section {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffffff 100%);
+      border: 2px solid #ffeaa7;
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(246, 194, 62, 0.1);
+    }
+
+    .config-header h6 {
+      color: #856404;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .payment-input-wrapper {
+      max-width: 400px;
+    }
+
+    .payment-input {
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .payment-help {
+      margin-top: 0.5rem;
+    }
+
+    .automation-settings-section {
+      background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+      border: 2px solid #bbdefb;
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0, 123, 255, 0.1);
+    }
+
+    .settings-header h6 {
+      color: #1565c0;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .settings-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border: 1px solid #e3f2fd;
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .setting-checkbox {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+
+    .setting-info {
+      flex: 1;
+    }
+
+    .setting-title {
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 0.25rem;
+    }
+
+    .setting-description {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+
+    .order-action-section {
+      background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+      border: 2px solid #c3e6cb;
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .order-action-section::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg, #28a745, #20c997, #17a2b8, #007bff);
+      border-radius: 15px;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .order-action-section:hover::before {
+      opacity: 0.1;
+    }
+
+    .action-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .summary-info {
+      flex: 1;
+    }
+
+    .order-stats {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #495057;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .primary-action {
+      position: relative;
+      min-width: 180px;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      border: none;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+    }
+
+    .primary-action:hover:not(:disabled) {
+      background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    }
+
+    .primary-action:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+
+    .loading-spinner {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .primary-action.loading .button-text {
+      opacity: 0;
+    }
+
+    .primary-action.loading .loading-spinner {
+      display: block !important;
+    }
+
+    /* Responsive Design Improvements */
+    @media (max-width: 768px) {
+      .enhanced-card-header {
+        padding: 1.5rem;
       }
 
-      // Enable/disable based on cookie status
-      {% if not current_user.cookies_saved %}
-      if (textarea) textarea.placeholder = 'Please save your Blinkit cookies first to use this feature.';
-      if (upiInput) upiInput.placeholder = 'Please save your Blinkit cookies first.';
-      {% endif %}
-  });
-</script>
-{% endblock %}
+      .enhanced-card-body {
+        padding: 1.5rem;
+      }
+
+      .progress-steps {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .progress-steps::before {
+        display: none;
+      }
+
+      .step {
+        flex-direction: row;
+        justify-content: flex-start;
+        text-align: left;
+        width: 100%;
+      }
+
+      .step-icon {
+        margin-bottom: 0;
+        margin-right: 1rem;
+        width: 40px;
+        height: 40px;
+      }
+
+      .setup-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .action-summary {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+      }
+
+      .action-buttons {
+        width: 100%;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .order-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .input-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .input-actions {
+        justify-content: center;
+      }
+
+      .textarea-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+        text-align: center;
+      }
+
+      .payment-input-wrapper {
+        max-width: 100%;
+      }
+
+      .settings-grid {
+        gap: 0.5rem;
+      }
+
+      .setting-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      .setting-control {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .enhanced-card-header h3 {
+        font-size: 1.25rem;
+      }
+
+      .smart-input-section,
+      .payment-config-section,
+      .automation-settings-section,
+      .order-action-section {
+        padding: 1rem;
+      }
+
+      .suggestion-items {
+        justify-content: center;
+      }
+
+      .primary-action {
+        min-width: 100%;
+      }
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced functionality
+        const textarea = document.getElementById('grocery_list');
+        const upiInput = document.getElementById('upi_id');
+        const form = document.getElementById('groceryOrderForm');
+        const submitBtn = form.querySelector('.primary-action');
+        const itemCounter = document.getElementById('itemCount');
+        const charCounter = document.getElementById('charCount');
+        const validationStatus = document.getElementById('validationStatus');
+        const suggestionsPanel = document.getElementById('suggestionsPanel');
+        const addSuggestionsBtn = document.getElementById('addSuggestedItems');
+        const clearListBtn = document.getElementById('clearList');
+        const closeSuggestionsBtn = document.getElementById('closeSuggestions');
+        const validateUpiBtn = document.getElementById('validateUpi');
+        const previewBtn = document.getElementById('previewOrder');
+
+        // Real-time textarea monitoring
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                updateCounters();
+                validateItems();
+
+                // Auto-resize
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        }
+
+        // Counter updates
+        function updateCounters() {
+            const text = textarea.value.trim();
+            const items = text ? text.split('\n').filter(line => line.trim()).length : 0;
+            const chars = text.length;
+
+            if (itemCounter) itemCounter.textContent = items;
+            if (charCounter) charCounter.textContent = chars;
+        }
+
+        // Item validation
+        function validateItems() {
+            if (!validationStatus) return;
+
+            const text = textarea.value.trim();
+            const items = text ? text.split('\n').filter(line => line.trim()) : [];
+
+            if (items.length === 0) {
+                validationStatus.innerHTML = '<i class="fas fa-info-circle text-muted"></i><span>Start typing to see validation</span>';
+            } else if (items.length < 3) {
+                validationStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i><span>Add more items for better results</span>';
+            } else {
+                validationStatus.innerHTML = '<i class="fas fa-check-circle text-success"></i><span>Looking good!</span>';
+            }
+        }
+
+        // Suggestions panel
+        if (addSuggestionsBtn) {
+            addSuggestionsBtn.addEventListener('click', function() {
+                suggestionsPanel.style.display = suggestionsPanel.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        if (closeSuggestionsBtn) {
+            closeSuggestionsBtn.addEventListener('click', function() {
+                suggestionsPanel.style.display = 'none';
+            });
+        }
+
+        // Add suggestion items
+        document.querySelectorAll('.suggestion-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                const item = this.dataset.item;
+                const currentText = textarea.value.trim();
+                const newText = currentText ? currentText + '\n' + item : item;
+                textarea.value = newText;
+                updateCounters();
+                validateItems();
+
+                // Visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Clear list
+        if (clearListBtn) {
+            clearListBtn.addEventListener('click', function() {
+                if (confirm('Clear all items from the list?')) {
+                    textarea.value = '';
+                    updateCounters();
+                    validateItems();
+                }
+            });
+        }
+
+        // UPI validation
+        if (validateUpiBtn) {
+            validateUpiBtn.addEventListener('click', function() {
+                const upiValue = upiInput.value.trim();
+                const upiPattern = /^[\w.-]+@[\w.-]+$/;
+
+                if (upiPattern.test(upiValue)) {
+                    this.innerHTML = '<i class="fas fa-check text-success"></i>';
+                    upiInput.classList.add('is-valid');
+                    upiInput.classList.remove('is-invalid');
+                } else {
+                    this.innerHTML = '<i class="fas fa-times text-danger"></i>';
+                    upiInput.classList.add('is-invalid');
+                    upiInput.classList.remove('is-valid');
+                }
+
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                }, 2000);
+            });
+        }
+
+        // Form submission with loading state
+        if (form && submitBtn) {
+            form.addEventListener('submit', function() {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            });
+        }
+
+        // Preview functionality
+        if (previewBtn) {
+            previewBtn.addEventListener('click', function() {
+                const items = textarea.value.trim().split('\n').filter(line => line.trim());
+                if (items.length === 0) {
+                    alert('Please add items to your grocery list first.');
+                    return;
+                }
+
+                const preview = items.map((item, index) => `${index + 1}. ${item}`).join('\n');
+                alert(`Order Preview:\n\n${preview}\n\nTotal Items: ${items.length}`);
+            });
+        }
+
+        // Initialize counters
+        updateCounters();
+        validateItems();
+
+        // Enable/disable based on cookie status
+        {% if not current_user.cookies_saved %}
+        if (textarea) textarea.placeholder = 'Please save your Blinkit cookies first to use this feature.';
+        if (upiInput) upiInput.placeholder = 'Please save your Blinkit cookies first.';
+        {% endif %}
+    });
+  </script>
+  {% endblock %}
+</div>

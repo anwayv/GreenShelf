@@ -526,13 +526,43 @@ def run_grocery_ordering(grocery_list, headless_mode, cookies_file, upi_id):
                     driver.get(PRODUCT_LINKS[item])
                     time.sleep(3)
                     try:
-                        add_button = WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable((By.XPATH, '//div[@data-pf="reset" and contains(text(), "Add to cart")]'))
-                        )
-                        driver.execute_script("arguments[0].click();", add_button)
-                        results.append(f"✅ {item} added to cart via direct link")
+                        # Updated selectors for current Blinkit website
+                        add_selectors = [
+                            '//button[contains(@class, "tw-bg-green-050") and contains(text(), "ADD")]',
+                            '//button[contains(@class, "tw-border-base-green") and contains(text(), "ADD")]',
+                            '//div[@role="button" and contains(text(), "ADD")]',
+                            '//button[contains(text(), "Add to cart")]',
+                            '//div[@data-pf="reset" and contains(text(), "Add to cart")]'  # Fallback to old selector
+                        ]
+                        
+                        add_button = None
+                        for selector in add_selectors:
+                            try:
+                                add_button = WebDriverWait(driver, 8).until(
+                                    EC.element_to_be_clickable((By.XPATH, selector))
+                                )
+                                break
+                            except:
+                                continue
+                        
+                        if add_button:
+                            # Scroll to button and ensure it's visible
+                            driver.execute_script("arguments[0].scrollIntoView(true);", add_button)
+                            time.sleep(1)
+                            
+                            # Try multiple click methods
+                            try:
+                                add_button.click()
+                            except:
+                                driver.execute_script("arguments[0].click();", add_button)
+                            
+                            results.append(f"✅ {item} added to cart via direct link")
+                        else:
+                            results.append(f"❌ No valid ADD button found for {item}")
+                            continue
+                            
                     except Exception as e:
-                        results.append(f"❌ Add button not found or failed for {item}: {str(e)[:100]}")
+                        results.append(f"❌ Add button interaction failed for {item}: {str(e)[:100]}")
                         continue
                 else:
                     results.append(f"⚠️ No direct link found for {item}")
@@ -540,14 +570,57 @@ def run_grocery_ordering(grocery_list, headless_mode, cookies_file, upi_id):
                 results.append(f"❌ Failed to add {item}: {str(e)[:100]}")
             time.sleep(2)
         
-        # Proceed to checkout (exact same logic as original app.py)
+        # Proceed to checkout with updated selectors
         try:
-            cart_icon = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "CartButton__CartIcon-sc-1fuy2nj-6")))
-            driver.execute_script("arguments[0].click();", cart_icon)
+            # Updated cart icon selectors
+            cart_selectors = [
+                "CartButton__CartIcon-sc-1fuy2nj-6",  # Original selector
+                "//div[contains(@class, 'CartButton__CartIcon')]",
+                "//*[contains(@class, 'cart-icon')]",
+                "//button[contains(@class, 'cart')]"
+            ]
+            
+            cart_clicked = False
+            for selector in cart_selectors:
+                try:
+                    if selector.startswith("//"):
+                        cart_icon = wait.until(EC.element_to_be_clickable((By.XPATH, selector)))
+                    else:
+                        cart_icon = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, selector)))
+                    
+                    driver.execute_script("arguments[0].click();", cart_icon)
+                    cart_clicked = True
+                    break
+                except:
+                    continue
+            
+            if not cart_clicked:
+                results.append("❌ Could not find or click cart icon")
+                return results
+                
             time.sleep(3)
             
-            checkout = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[contains(text(), "Proceed To Pay") and contains(@class, "CheckoutStrip__CTAText-sc-1fzbdhy-13")]')))
-            driver.execute_script("arguments[0].click();", checkout)
+            # Updated checkout selectors
+            checkout_selectors = [
+                '//div[contains(text(), "Proceed To Pay") and contains(@class, "CheckoutStrip__CTAText-sc-1fzbdhy-13")]',  # Original
+                '//button[contains(text(), "Proceed") and contains(text(), "Pay")]',
+                '//div[contains(text(), "Proceed To Pay")]',
+                '//*[contains(@class, "checkout") and contains(text(), "Pay")]'
+            ]
+            
+            checkout_clicked = False
+            for selector in checkout_selectors:
+                try:
+                    checkout = wait.until(EC.element_to_be_clickable((By.XPATH, selector)))
+                    driver.execute_script("arguments[0].click();", checkout)
+                    checkout_clicked = True
+                    break
+                except:
+                    continue
+            
+            if not checkout_clicked:
+                results.append("❌ Could not find or click checkout button")
+                return results
             results.append("✅ Checkout clicked")
             time.sleep(5)
             

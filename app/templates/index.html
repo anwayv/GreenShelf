@@ -180,7 +180,7 @@
       </div>
     </div>
 
-    <!-- Shop by Categories Section -->
+    <!-- Add Items by Category Section -->
     <div class="modern-card categories-card mt-4">
       <div class="modern-card-header">
         <div class="card-header-content">
@@ -188,7 +188,7 @@
             <i class="fas fa-th-large"></i>
           </div>
           <div class="card-title-section">
-            <h5 class="card-title">Shop by Categories</h5>
+            <h5 class="card-title">Add Items by Category</h5>
             <p class="card-subtitle">Browse products by category to add to your inventory</p>
             <div class="category-stats" id="categoryStats" style="display: none;">
               <small class="text-muted">
@@ -201,11 +201,13 @@
         </div>
       </div>
       <div class="modern-card-body">
-        <div class="categories-grid" id="categoriesGrid">
-          <!-- Categories will be loaded here dynamically -->
-          <div class="category-loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading categories...</p>
+        <div class="categories-container">
+          <div class="categories-grid" id="categoriesGrid">
+            <!-- Categories will be loaded here dynamically -->
+            <div class="category-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading categories...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -397,6 +399,226 @@
 </div>
 
 <style>
+  /* Categories Container with Scrollbar */
+  .categories-container {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  /* Custom Scrollbar */
+  .categories-container::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .categories-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  .categories-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #007bff, #0056b3);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  .categories-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #0056b3, #004085);
+  }
+
+  /* Categories Grid */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  /* Category Card */
+  .category-card-wrapper {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .category-card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    position: relative;
+  }
+
+  .category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Category Image Container */
+  .category-image-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+  }
+
+  .category-full-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .category-card:hover .category-full-image {
+    transform: scale(1.05);
+  }
+
+  .fallback-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+  }
+
+  /* Category Overlay */
+  .category-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: 30px 20px 20px;
+    transform: translateY(30px);
+    transition: transform 0.3s ease;
+  }
+
+  .category-card:hover .category-overlay {
+    transform: translateY(0);
+  }
+
+  .category-info {
+    text-align: center;
+  }
+
+  .category-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .category-count {
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    opacity: 0.9;
+  }
+
+  .add-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .category-card:hover .add-button {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  /* Category Loading */
+  .category-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+  }
+
+  .category-loading i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #007bff;
+  }
+
+  /* Notification Improvements */
+  .notification-item {
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .notification-close {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.1rem;
+    padding: 4px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .notification-close:hover {
+    background: #f8d7da;
+    color: #721c24;
+    transform: scale(1.1);
+  }
+
+  .notification-close:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Responsive Design for Categories */
+  @media (max-width: 768px) {
+    .categories-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .category-image-container {
+      height: 160px;
+    }
+
+    .categories-container {
+      max-height: 400px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .categories-grid {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .category-image-container {
+      height: 180px;
+    }
+  }
+
   .product-grid {
     display: flex;
     flex-direction: column;
@@ -575,9 +797,12 @@
   // Function to load categories from products JSON
   async function loadCategories() {
     try {
+      console.log('Loading categories...');
       const response = await fetch("/static/products.json");
       const products = await response.json();
       const grid = document.getElementById("categoriesGrid");
+
+      console.log('Loaded products:', products.length);
 
       // Clear existing content
       grid.innerHTML = "";
@@ -586,6 +811,8 @@
       const categories = [
         ...new Set(products.map((product) => product.category)),
       ];
+      
+      console.log('Found categories:', categories);
 
       // Category icons mapping (fallback if no image)
       const categoryIcons = {
@@ -650,40 +877,68 @@
       document.getElementById("categoryStats").style.display = "block";
 
       // Create category cards
-      categories.forEach((category) => {
+      categories.forEach((category, index) => {
+        console.log(`Creating card for category: ${category}`);
+        
         const productsInCategory = products.filter(
           (product) => product.category === category
         );
         const categoryCard = document.createElement("div");
-        categoryCard.className = "col-sm-6 col-md-4 col-lg-3";
+        categoryCard.className = "category-card-wrapper";
 
         const icon = categoryIcons[category] || "fas fa-shopping-basket";
         const color = categoryColors[category] || "primary";
         const image = categoryImages[category];
+        
+        console.log(`Category: ${category}, Image: ${image}, Products: ${productsInCategory.length}`);
 
         categoryCard.innerHTML = `
-          <div class="card category-card h-100" style="cursor: pointer;" onclick="goToCategory('${category}')">
-            ${
-              image
-                ? `<img src="${image}" alt="${category}" class="card-img-top category-full-image" 
-                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                   <div class="fallback-icon" style="display:none;">
-                     <i class="${icon} fa-3x text-white"></i>
-                   </div>`
-                : `<div class="fallback-icon">
-                     <i class="${icon} fa-3x text-white"></i>
-                   </div>`
-            }
-            <div class="card-body">
-              <h5 class="card-title">${category}</h5>
-              <p class="card-text">${
-                productsInCategory.length
-              } item${productsInCategory.length !== 1 ? 's' : ''} available</p>
+          <div class="card category-card h-100" style="cursor: pointer; animation-delay: ${index * 0.1}s;" data-category="${category}">
+            <div class="category-image-container">
+              ${
+                image
+                  ? `<img src="${image}" alt="${category}" class="category-full-image" 
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                     <div class="fallback-icon" style="display:none;">
+                       <i class="${icon} fa-4x text-white"></i>
+                     </div>`
+                  : `<div class="fallback-icon">
+                       <i class="${icon} fa-4x text-white"></i>
+                     </div>`
+              }
+              <div class="category-overlay">
+                <div class="category-info">
+                  <h5 class="category-title">${category}</h5>
+                  <p class="category-count">${
+                    productsInCategory.length
+                  } item${productsInCategory.length !== 1 ? 's' : ''}</p>
+                  <div class="add-button">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Items</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         `;
+        
+        // Add click event listener
+        const cardElement = categoryCard.querySelector('.category-card');
+        if (cardElement) {
+          cardElement.addEventListener('click', function(event) {
+            console.log('Category card clicked:', category);
+            event.preventDefault();
+            event.stopPropagation();
+            const categoryName = this.getAttribute('data-category');
+            console.log('Retrieved category from data attribute:', categoryName);
+            goToCategory.call(this, categoryName, event);
+          });
+          console.log(`Event listener added for category: ${category}`);
+        } else {
+          console.error('Card element not found for category:', category);
+        }
 
-        // Add card to grid (no initial hidden state to prevent invisibility)
+        // Add card to grid
         grid.appendChild(categoryCard);
       });
 
@@ -728,27 +983,59 @@
   }
 
   // Function to navigate to category page with loading effect
-  function goToCategory(category) {
-    const card = event.currentTarget;
+  function goToCategory(category, evt) {
+    console.log('Navigating to category:', category);
+    
+    const card = evt ? evt.currentTarget : this;
+    let originalContent = '';
     
     // Add loading effect to clicked card
     card.style.transform = "scale(0.95)";
     card.style.transition = "transform 0.2s ease";
     card.style.opacity = "0.7";
     
-    // Add loading spinner to the card
-    const cardBody = card.querySelector('.card-body');
-    const originalContent = cardBody.innerHTML;
-    cardBody.innerHTML = `
-      <div class="text-center">
-        <i class="fas fa-spinner fa-spin text-primary mb-2"></i>
-        <div style="font-size: 0.8rem; color: #6c757d;">Loading...</div>
-      </div>
-    `;
+    // Get the overlay element instead of card-body since we changed the structure
+    const overlayInfo = card.querySelector('.category-info');
+    if (overlayInfo) {
+      originalContent = overlayInfo.innerHTML;
+      overlayInfo.innerHTML = `
+        <div class="text-center">
+          <i class="fas fa-spinner fa-spin text-white mb-2" style="font-size: 1.5rem;"></i>
+          <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); margin-top: 8px;">Loading category...</div>
+        </div>
+      `;
+    }
+    
+    // Function to restore card state
+    const restoreCard = () => {
+      card.style.transform = "";
+      card.style.opacity = "";
+      if (overlayInfo && originalContent) {
+        overlayInfo.innerHTML = originalContent;
+      }
+    };
 
+    // Construct the URL and navigate
+    const categoryUrl = `/category/${encodeURIComponent(category)}`;
+    console.log('Navigating to URL:', categoryUrl);
+    
     setTimeout(() => {
-      window.location.href = `/category/${encodeURIComponent(category)}`;
-    }, 300);
+      try {
+        window.location.href = categoryUrl;
+      } catch (error) {
+        console.error('Navigation error:', error);
+        alert('Error navigating to category. Please try again.');
+        restoreCard();
+      }
+    }, 500);
+    
+    // Fallback restore in case navigation fails
+    setTimeout(() => {
+      if (overlayInfo && overlayInfo.innerHTML.includes('fa-spinner')) {
+        console.warn('Navigation may have failed, restoring card state');
+        restoreCard();
+      }
+    }, 3000);
   }
 
   // Function to show loading shimmer effect
@@ -807,6 +1094,12 @@
     const csrfToken = document
       .querySelector('meta[name="csrf-token"]')
       .getAttribute("content");
+    
+    // Add loading state to button
+    const originalContent = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    buttonElement.disabled = true;
+    
     fetch(`/notifications/mark-read/${notificationId}`, {
       method: "POST",
       headers: {
@@ -817,15 +1110,39 @@
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          // Remove the notification from the UI
-          const notificationElement = buttonElement.closest(".mb-2");
+          // Remove the notification from the UI with animation
+          const notificationElement = buttonElement.closest(".notification-item");
           if (notificationElement) {
-            notificationElement.remove();
+            notificationElement.style.transition = "all 0.3s ease";
+            notificationElement.style.opacity = "0";
+            notificationElement.style.transform = "translateX(100%)";
+            setTimeout(() => {
+              notificationElement.remove();
+              
+              // Check if there are any notifications left
+              const remainingNotifications = document.querySelectorAll(".notification-item");
+              if (remainingNotifications.length === 0) {
+                // Hide the entire notification section
+                const notificationCard = document.querySelector(".notification-card").closest(".row");
+                if (notificationCard) {
+                  notificationCard.style.display = "none";
+                }
+              }
+            }, 300);
           }
+        } else {
+          // Restore button if there was an error
+          buttonElement.innerHTML = originalContent;
+          buttonElement.disabled = false;
+          alert("Failed to mark notification as read");
         }
       })
       .catch((error) => {
         console.error("Error:", error);
+        // Restore button on error
+        buttonElement.innerHTML = originalContent;
+        buttonElement.disabled = false;
+        alert("Error marking notification as read");
       });
   }
 </script>
