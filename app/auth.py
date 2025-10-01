@@ -107,37 +107,50 @@ def logout():
 @auth_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    form = PreferencesForm()
-    
-    if request.method == 'GET':
-        # Populate form with current user data
-        form.family_size.data = current_user.family_size
-        form.preferred_brands.data = '\n'.join(current_user.get_preferred_brands())
-        form.dietary_restrictions.data = '\n'.join(current_user.get_dietary_restrictions())
-        form.taste_preferences.data = '\n'.join(current_user.get_taste_preferences())
-        form.delivery_time_slots.data = '\n'.join(current_user.get_delivery_time_slots())
-        form.upi_id.data = current_user.upi_id
-        form.auto_order_enabled.data = current_user.auto_order_enabled
-        form.checkout_enabled.data = current_user.checkout_enabled
-        form.check_interval_minutes.data = current_user.check_interval_minutes
-    
-    if form.validate_on_submit():
-        # Update user preferences
-        current_user.family_size = form.family_size.data
-        current_user.set_preferred_brands([b.strip() for b in form.preferred_brands.data.split('\n') if b.strip()])
-        current_user.set_dietary_restrictions([r.strip() for r in form.dietary_restrictions.data.split('\n') if r.strip()])
-        current_user.set_taste_preferences([p.strip() for p in form.taste_preferences.data.split('\n') if p.strip()])
-        current_user.set_delivery_time_slots([s.strip() for s in form.delivery_time_slots.data.split('\n') if s.strip()])
-        current_user.upi_id = form.upi_id.data
-        current_user.auto_order_enabled = form.auto_order_enabled.data
-        current_user.checkout_enabled = form.checkout_enabled.data
-        current_user.check_interval_minutes = form.check_interval_minutes.data
+    try:
+        form = PreferencesForm()
         
-        db.session.commit()
-        flash('Preferences updated successfully!', 'success')
-        return redirect(url_for('auth.profile'))
-    
-    return render_template('auth/profile.html', title='Profile', form=form)
+        if request.method == 'GET':
+            # Populate form with current user data
+            form.family_size.data = getattr(current_user, 'family_size', 1)
+            form.preferred_brands.data = '\n'.join(current_user.get_preferred_brands() if hasattr(current_user, 'get_preferred_brands') else [])
+            form.dietary_restrictions.data = '\n'.join(current_user.get_dietary_restrictions() if hasattr(current_user, 'get_dietary_restrictions') else [])
+            form.taste_preferences.data = '\n'.join(current_user.get_taste_preferences() if hasattr(current_user, 'get_taste_preferences') else [])
+            form.delivery_time_slots.data = '\n'.join(current_user.get_delivery_time_slots() if hasattr(current_user, 'get_delivery_time_slots') else [])
+            form.upi_id.data = getattr(current_user, 'upi_id', '')
+            form.auto_order_enabled.data = getattr(current_user, 'auto_order_enabled', False)
+            form.checkout_enabled.data = getattr(current_user, 'checkout_enabled', False)
+            form.check_interval_minutes.data = getattr(current_user, 'check_interval_minutes', 60)
+        
+        if form.validate_on_submit():
+            try:
+                # Update user preferences
+                current_user.family_size = form.family_size.data
+                if hasattr(current_user, 'set_preferred_brands'):
+                    current_user.set_preferred_brands([b.strip() for b in form.preferred_brands.data.split('\n') if b.strip()])
+                if hasattr(current_user, 'set_dietary_restrictions'):
+                    current_user.set_dietary_restrictions([r.strip() for r in form.dietary_restrictions.data.split('\n') if r.strip()])
+                if hasattr(current_user, 'set_taste_preferences'):
+                    current_user.set_taste_preferences([p.strip() for p in form.taste_preferences.data.split('\n') if p.strip()])
+                if hasattr(current_user, 'set_delivery_time_slots'):
+                    current_user.set_delivery_time_slots([s.strip() for s in form.delivery_time_slots.data.split('\n') if s.strip()])
+                
+                current_user.upi_id = form.upi_id.data
+                current_user.auto_order_enabled = form.auto_order_enabled.data
+                current_user.checkout_enabled = form.checkout_enabled.data
+                current_user.check_interval_minutes = form.check_interval_minutes.data
+                
+                db.session.commit()
+                flash('Preferences updated successfully!', 'success')
+                return redirect(url_for('auth.profile'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error updating preferences: {str(e)}', 'error')
+        
+        return render_template('auth/profile.html', title='Profile', form=form)
+    except Exception as e:
+        flash(f'Error loading profile: {str(e)}', 'error')
+        return redirect(url_for('main.index'))
 
 @auth_bp.route('/onboarding')
 @login_required

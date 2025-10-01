@@ -1,100 +1,137 @@
-{% extends 'layout.html' %}
-{% block title %}Register - Green Shelf{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <i class="fas fa-leaf fa-3x text-success mb-3"></i>
-                    <h3 class="card-title">Join Green Shelf</h3>
-                    <p class="text-muted">Create your account to start automating your grocery management</p>
-                </div>
-                
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.username.label(class="form-label") }}
-                            {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
-                            {% if form.username.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.username.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
-                            {% if form.email.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.password.label(class="form-label") }}
-                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
-                            {% if form.password.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.password.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            {{ form.password2.label(class="form-label") }}
-                            {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else "")) }}
-                            {% if form.password2.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.password2.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.family_size.label(class="form-label") }}
-                            {{ form.family_size(class="form-control" + (" is-invalid" if form.family_size.errors else "")) }}
-                            {% if form.family_size.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.family_size.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            {{ form.pincode.label(class="form-label") }}
-                            {{ form.pincode(class="form-control" + (" is-invalid" if form.pincode.errors else "")) }}
-                            {% if form.pincode.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.pincode.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid">
-                        {{ form.submit(class="btn btn-success btn-lg") }}
-                    </div>
-                </form>
-                
-                <div class="text-center mt-4">
-                    <p class="mb-0">Already have an account? 
-                        <a href="{{ url_for('auth.login') }}" class="text-success">Sign in here</a>
-                    </p>
-                </div>
+{% extends 'layout.html' %} {% block title %}Register - Green Shelf{% endblock
+%} {% block content %}
+<div class="registration-container">
+  <div class="registration-background"></div>
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-lg-5 col-md-7">
+        <div class="registration-card">
+          <div class="registration-header">
+            <div class="brand-logo">
+              <i class="fas fa-leaf"></i>
             </div>
+            <h2 class="registration-title">Join Green Shelf</h2>
+            <p class="registration-subtitle">
+              Start your smart grocery management journey today
+            </p>
+          </div>
+
+          <div class="registration-form">
+            <form method="POST">
+              {{ form.hidden_tag() }}
+
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-icon">
+                    <i class="fas fa-user"></i>
+                  </span>
+                  {{ form.username(class="modern-input", placeholder="Username")
+                  }}
+                </div>
+                {% if form.username.errors %}
+                <div class="error-message">
+                  {% for error in form.username.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-icon">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                  {{ form.email(class="modern-input", placeholder="Email
+                  Address") }}
+                </div>
+                {% if form.email.errors %}
+                <div class="error-message">
+                  {% for error in form.email.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-icon">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  {{ form.password(class="modern-input", placeholder="Password")
+                  }}
+                </div>
+                {% if form.password.errors %}
+                <div class="error-message">
+                  {% for error in form.password.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-icon">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  {{ form.password2(class="modern-input", placeholder="Confirm
+                  Password") }}
+                </div>
+                {% if form.password2.errors %}
+                <div class="error-message">
+                  {% for error in form.password2.errors %}{{ error }}{% endfor
+                  %}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <div class="input-group">
+                    <span class="input-icon">
+                      <i class="fas fa-users"></i>
+                    </span>
+                    {{ form.family_size(class="modern-input",
+                    placeholder="Family Size") }}
+                  </div>
+                  {% if form.family_size.errors %}
+                  <div class="error-message">
+                    {% for error in form.family_size.errors %}{{ error }}{%
+                    endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group half-width">
+                  <div class="input-group">
+                    <span class="input-icon">
+                      <i class="fas fa-map-pin"></i>
+                    </span>
+                    {{ form.pincode(class="modern-input", placeholder="Pincode")
+                    }}
+                  </div>
+                  {% if form.pincode.errors %}
+                  <div class="error-message">
+                    {% for error in form.pincode.errors %}{{ error }}{% endfor
+                    %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                {{ form.submit(class="registration-btn") }}
+              </div>
+            </form>
+
+            <div class="registration-footer">
+              <p>
+                Already have an account?
+                <a href="{{ url_for('auth.login') }}" class="login-link"
+                  >Sign in here</a
+                >
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
-
-

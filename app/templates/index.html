@@ -1,24 +1,56 @@
 {% extends 'layout.html' %} {% block content %}
+
+<!-- Hero Welcome Section -->
+<div class="hero-welcome mb-4">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <h2 class="hero-title">
+        <i class="fas fa-leaf text-success me-2"></i>
+        Welcome back, {{ current_user.username }}!
+      </h2>
+      <p class="hero-subtitle">Manage your pantry smartly with AI-powered grocery management</p>
+    </div>
+    <div class="col-lg-4 text-end">
+      <div class="stats-summary">
+        <div class="stat-item">
+          <span class="stat-number">{{ inventory_items|length }}</span>
+          <span class="stat-label">Items</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number text-warning">{{ low_items|length }}</span>
+          <span class="stat-label">Low Stock</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Notifications -->
 {% if notifications %}
 <div class="row mb-4">
   <div class="col-12">
-    <div class="alert alert-info">
-      <h6><i class="fas fa-bell me-2"></i>Recent Notifications</h6>
-      {% for notification in notifications %}
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div>
-          <strong>{{ notification.title }}</strong><br />
-          <small>{{ notification.message }}</small>
-        </div>
-        <button
-          class="btn btn-sm btn-outline-secondary"
-          onclick="markAsRead('{{ notification.id }}', this)"
-        >
-          <i class="fas fa-times"></i>
-        </button>
+    <div class="notification-card">
+      <div class="notification-header">
+        <i class="fas fa-bell me-2"></i>Recent Notifications
+        <span class="notification-count">{{ notifications|length }}</span>
       </div>
-      {% endfor %}
+      <div class="notification-body">
+        {% for notification in notifications %}
+        <div class="notification-item">
+          <div class="notification-content">
+            <h6 class="notification-title">{{ notification.title }}</h6>
+            <p class="notification-message">{{ notification.message }}</p>
+          </div>
+          <button
+            class="notification-close"
+            onclick="markAsRead('{{ notification.id }}', this)"
+            title="Mark as read"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>
@@ -26,241 +58,337 @@
 
 <div class="row g-4">
   <div class="col-12 col-lg-7">
-    <div class="card">
-      <div
-        class="card-header d-flex justify-content-between align-items-center"
-      >
-        <span><i class="fas fa-boxes me-2"></i>Inventory Management</span>
-        <div class="inventory-buttons">
-          <a href="{{ url_for('receipts.upload') }}" class="inventory-btn">
-            <i class="fas fa-upload"></i>Upload Receipt
+    <div class="modern-card inventory-card">
+      <div class="modern-card-header">
+        <div class="card-header-content">
+          <div class="card-icon">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="card-title-section">
+            <h5 class="card-title">Inventory Management</h5>
+            <p class="card-subtitle">Track and manage your pantry items</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="{{ url_for('receipts.upload') }}" class="action-button primary">
+            <i class="fas fa-upload"></i>
+            <span>Upload Receipt</span>
           </a>
-          <a
-            href="{{ url_for('meal_planning.index') }}"
-            class="inventory-btn btn-success"
-          >
-            <i class="fas fa-calendar"></i>Meal Planning
+          <a href="{{ url_for('meal_planning.index') }}" class="action-button success">
+            <i class="fas fa-calendar"></i>
+            <span>Meal Planning</span>
           </a>
         </div>
       </div>
-      <div class="card-body p-0">
-        <table class="table table-striped mb-0">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th>Threshold</th>
-              <th>Unit</th>
-              <th>Category</th>
-              <th class="text-end">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% if inventory_items %} {% for item in inventory_items %}
-            <tr class="{{ 'table-warning' if item.is_low_stock() else '' }}">
-              <td>{{ item.name }}</td>
-              <td>{{ item.quantity }}</td>
-              <td>{{ item.threshold }}</td>
-              <td>{{ item.unit }}</td>
-              <td>{{ item.category or '-' }}</td>
-              <td class="text-end">
-                <form
-                  action="{{ url_for('main.adjust_item_quantity') }}"
-                  method="POST"
-                  class="d-inline"
-                >
-                  <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="{{ csrf_token() }}"
-                  />
-                  <input type="hidden" name="item_id" value="{{ item.id }}" />
-                  <input type="hidden" name="delta" value="-1" />
-                  <button
-                    type="submit"
-                    class="btn btn-sm btn-outline-secondary"
-                  >
-                    -1
-                  </button>
-                </form>
-                <form
-                  action="{{ url_for('main.adjust_item_quantity') }}"
-                  method="POST"
-                  class="d-inline"
-                >
-                  <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="{{ csrf_token() }}"
-                  />
-                  <input type="hidden" name="item_id" value="{{ item.id }}" />
-                  <input type="hidden" name="delta" value="1" />
-                  <button
-                    type="submit"
-                    class="btn btn-sm btn-outline-secondary"
-                  >
-                    +1
-                  </button>
-                </form>
-                <form
-                  action="{{ url_for('main.delete_item') }}"
-                  method="POST"
-                  class="d-inline"
-                >
-                  <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="{{ csrf_token() }}"
-                  />
-                  <input type="hidden" name="item_id" value="{{ item.id }}" />
-                  <button type="submit" class="btn btn-sm btn-outline-danger">
-                    Delete
-                  </button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %} {% else %}
-            <tr>
-              <td colspan="6" class="text-center text-muted">
-                No items yet. <a href="#add-item">Add your first item</a>
-              </td>
-            </tr>
-            {% endif %}
-          </tbody>
-        </table>
+      <div class="modern-card-body">
+        <div class="table-container">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th><i class="fas fa-tag me-2"></i>Name</th>
+                <th><i class="fas fa-cubes me-2"></i>Quantity</th>
+                <th><i class="fas fa-chart-line me-2"></i>Threshold</th>
+                <th><i class="fas fa-ruler me-2"></i>Unit</th>
+                <th><i class="fas fa-folder me-2"></i>Category</th>
+                <th class="text-center"><i class="fas fa-cogs me-2"></i>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if inventory_items %} 
+              {% for item in inventory_items %}
+              <tr class="table-row {{ 'low-stock-row' if item.is_low_stock() else '' }}">
+                <td class="item-name">
+                  <div class="item-info">
+                    <span class="item-title">{{ item.name }}</span>
+                    {% if item.is_low_stock() %}
+                    <span class="low-stock-badge">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      Low Stock
+                    </span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td class="quantity-cell">
+                  <span class="quantity-value">{{ item.quantity }}</span>
+                </td>
+                <td class="threshold-cell">{{ item.threshold }}</td>
+                <td class="unit-cell">{{ item.unit }}</td>
+                <td class="category-cell">
+                  <span class="category-badge">{{ item.category or 'Uncategorized' }}</span>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <form
+                      action="{{ url_for('main.adjust_item_quantity') }}"
+                      method="POST"
+                      class="d-inline"
+                    >
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <input type="hidden" name="item_id" value="{{ item.id }}" />
+                      <input type="hidden" name="delta" value="-1" />
+                      <button type="submit" class="quantity-btn decrease" title="Decrease quantity">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                    </form>
+                    
+                    <form
+                      action="{{ url_for('main.adjust_item_quantity') }}"
+                      method="POST"
+                      class="d-inline"
+                    >
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <input type="hidden" name="item_id" value="{{ item.id }}" />
+                      <input type="hidden" name="delta" value="1" />
+                      <button type="submit" class="quantity-btn increase" title="Increase quantity">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </form>
+                    
+                    <form
+                      action="{{ url_for('main.delete_item') }}"
+                      method="POST"
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to delete {{ item.name }}?')"
+                    >
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <input type="hidden" name="item_id" value="{{ item.id }}" />
+                      <button type="submit" class="delete-btn" title="Delete item">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %} 
+              {% else %}
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <div class="empty-state-content">
+                    <i class="fas fa-box-open empty-state-icon"></i>
+                    <h6 class="empty-state-title">No items in your inventory yet</h6>
+                    <p class="empty-state-text">Start by uploading a receipt or adding items manually</p>
+                    <a href="{{ url_for('receipts.upload') }}" class="empty-state-btn">
+                      <i class="fas fa-plus me-2"></i>Add Your First Item
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Shop by Categories Section with Scrollbar -->
-    <div class="card mt-4">
-      <div class="card-header">
-        <span><i class="fas fa-th-large me-2"></i>Add by Categories</span>
+    <!-- Shop by Categories Section -->
+    <div class="modern-card categories-card mt-4">
+      <div class="modern-card-header">
+        <div class="card-header-content">
+          <div class="card-icon">
+            <i class="fas fa-th-large"></i>
+          </div>
+          <div class="card-title-section">
+            <h5 class="card-title">Shop by Categories</h5>
+            <p class="card-subtitle">Browse products by category to add to your inventory</p>
+            <div class="category-stats" id="categoryStats" style="display: none;">
+              <small class="text-muted">
+                <i class="fas fa-box me-1"></i>
+                <span id="categoryCount">0</span> categories • 
+                <span id="totalProducts">0</span> total products
+              </small>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body categories-scrollable">
-        <div class="row g-3" id="categoriesGrid">
+      <div class="modern-card-body">
+        <div class="categories-grid" id="categoriesGrid">
           <!-- Categories will be loaded here dynamically -->
+          <div class="category-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading categories...</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="col-12 col-lg-5">
-    <div class="card">
-      <div
-        class="card-header d-flex justify-content-between align-items-center"
-      >
-        <span>Low Inventory & Order</span>
-        <div>
+    <div class="modern-card low-inventory-card">
+      <div class="modern-card-header">
+        <div class="card-header-content">
+          <div class="card-icon warning">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="card-title-section">
+            <h5 class="card-title">Low Inventory Alert</h5>
+            <p class="card-subtitle">Items running low and ordering</p>
+          </div>
+        </div>
+        <div class="connection-status">
           {% if current_user.cookies_saved %}
-          <span class="badge bg-success">
-            <i class="fas fa-check me-1"></i>Cookies Saved
-          </span>
+          <div class="status-badge success">
+            <i class="fas fa-check-circle"></i>
+            <span>Connected</span>
+          </div>
           {% else %}
-          <span class="badge bg-warning">
-            <i class="fas fa-exclamation-triangle me-1"></i>No Cookies
-          </span>
+          <div class="status-badge warning">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Not Connected</span>
+          </div>
           {% endif %}
         </div>
       </div>
-      <div class="card-body">
-        <p class="mb-2">Items below threshold: {{ low_items|length }}</p>
+      <div class="modern-card-body">
+        <div class="low-inventory-summary">
+          <div class="summary-stat">
+            <span class="stat-number {{ 'text-danger' if low_items|length > 0 else 'text-success' }}">
+              {{ low_items|length }}
+            </span>
+            <span class="stat-label">Items Below Threshold</span>
+          </div>
+        </div>
+        
         {% if low_items %}
-        <ul class="list-unstyled">
+        <div class="low-items-list">
           {% for item in low_items %}
-          <li class="mb-1">
-            <span class="badge bg-warning">{{ item.name }}</span>
-            <small class="text-muted"
-              >({{ item.quantity }} {{ item.unit }} / {{ item.threshold }} {{
-              item.unit }})</small
-            >
-          </li>
+          <div class="low-item">
+            <div class="low-item-info">
+              <span class="item-name">{{ item.name }}</span>
+              <div class="item-quantities">
+                <span class="current-qty">{{ item.quantity }} {{ item.unit }}</span>
+                <span class="threshold-separator">/</span>
+                <span class="threshold-qty">{{ item.threshold }} {{ item.unit }}</span>
+              </div>
+            </div>
+            <div class="urgency-indicator {{ 'critical' if item.quantity <= item.threshold * 0.5 else 'warning' }}">
+              <i class="fas fa-{{ 'exclamation-triangle' if item.quantity <= item.threshold * 0.5 else 'exclamation-circle' }}"></i>
+            </div>
+          </div>
           {% endfor %}
-        </ul>
+        </div>
+        {% else %}
+        <div class="no-low-items">
+          <i class="fas fa-check-circle text-success"></i>
+          <p class="mb-0">All items are well stocked!</p>
+        </div>
         {% endif %}
-        <form
-          action="{{ url_for('main.order_low_items') }}"
-          method="POST"
-          class="row g-2"
-        >
+        <form action="{{ url_for('main.order_low_items') }}" method="POST" class="order-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <div class="col-12">
-            <label class="form-label">UPI ID</label>
+          
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-mobile-alt me-2"></i>UPI ID
+            </label>
             <input
               type="text"
               name="upi"
-              class="form-control"
+              class="modern-input"
               value="{{ current_user.upi_id or '' }}"
-              placeholder="your@upi"
+              placeholder="yourname@upi"
               required
             />
           </div>
-          <div class="col-12 form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="checkout"
-              name="checkout"
-              value="1"
-            />
-            <label class="form-check-label" for="checkout"
-              >Proceed to checkout to trigger UPI request (manual
-              confirm)</label
-            >
+          
+          <div class="form-group">
+            <div class="custom-checkbox">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="checkout"
+                name="checkout"
+                value="1"
+              />
+              <label class="checkbox-label" for="checkout">
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">Auto-proceed to checkout for UPI payment</span>
+              </label>
+            </div>
           </div>
-          <div class="col-12">
+          
+          <div class="form-group">
             <button
               type="submit"
-              class="btn btn-success"
-              {%
-              if
-              not
-              low_items
-              %}disabled{%
-              endif
-              %}
+              class="order-button {{ 'disabled' if not low_items else '' }}"
+              {{ 'disabled' if not low_items else '' }}
             >
-              <i class="fas fa-shopping-cart me-1"></i>Prepare Cart on Blinkit
+              <i class="fas fa-shopping-cart me-2"></i>
+              <span>Prepare Cart on Blinkit</span>
+              {% if low_items %}
+              <div class="button-badge">{{ low_items|length }}</div>
+              {% endif %}
             </button>
           </div>
         </form>
       </div>
     </div>
 
-    <div class="card mt-4">
-      <div class="card-header">
-        <span><i class="fas fa-bolt me-2"></i>Quick Actions</span>
+    <div class="modern-card quick-actions-card mt-4">
+      <div class="modern-card-header">
+        <div class="card-header-content">
+          <div class="card-icon">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <div class="card-title-section">
+            <h5 class="card-title">Quick Actions</h5>
+            <p class="card-subtitle">Frequently used features</p>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="d-grid gap-3">
-          <a
-            href="{{ url_for('recipes.index') }}"
-            class="btn btn-primary quick-action-btn"
-          >
-            <i class="fas fa-book me-2"></i>Browse Recipes
+      <div class="modern-card-body">
+        <div class="quick-actions-grid">
+          <a href="{{ url_for('recipes.index') }}" class="quick-action-item primary">
+            <div class="action-icon">
+              <i class="fas fa-book"></i>
+            </div>
+            <div class="action-content">
+              <h6 class="action-title">Recipes</h6>
+              <p class="action-desc">Browse cooking ideas</p>
+            </div>
+            <i class="fas fa-arrow-right action-arrow"></i>
           </a>
-          <a
-            href="{{ url_for('meal_planning.shopping_list') }}"
-            class="btn btn-info quick-action-btn"
-          >
-            <i class="fas fa-list me-2"></i>Shopping List
+          
+          <a href="{{ url_for('meal_planning.shopping_list') }}" class="quick-action-item info">
+            <div class="action-icon">
+              <i class="fas fa-list"></i>
+            </div>
+            <div class="action-content">
+              <h6 class="action-title">Shopping List</h6>
+              <p class="action-desc">Planned purchases</p>
+            </div>
+            <i class="fas fa-arrow-right action-arrow"></i>
           </a>
-          <a
-            href="{{ url_for('main.grocery_order') }}"
-            class="btn btn-success quick-action-btn"
-          >
-            <i class="fas fa-shopping-cart me-2"></i>Grocery Order
+          
+          <a href="{{ url_for('main.grocery_order') }}" class="quick-action-item success">
+            <div class="action-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="action-content">
+              <h6 class="action-title">Grocery Order</h6>
+              <p class="action-desc">Order groceries</p>
+            </div>
+            <i class="fas fa-arrow-right action-arrow"></i>
           </a>
-          <a
-            href="{{ url_for('main.save_cookies') }}"
-            class="btn btn-warning quick-action-btn"
-          >
-            <i class="fas fa-cookie-bite me-2"></i>Cookie Management
+          
+          <a href="{{ url_for('main.save_cookies') }}" class="quick-action-item warning">
+            <div class="action-icon">
+              <i class="fas fa-cookie-bite"></i>
+            </div>
+            <div class="action-content">
+              <h6 class="action-title">Blinkit Setup</h6>
+              <p class="action-desc">Connect account</p>
+            </div>
+            <i class="fas fa-arrow-right action-arrow"></i>
           </a>
-          <a
-            href="{{ url_for('auth.profile') }}"
-            class="btn btn-secondary quick-action-btn"
-          >
-            <i class="fas fa-user-cog me-2"></i>Profile Settings
+          
+          <a href="{{ url_for('auth.profile') }}" class="quick-action-item secondary">
+            <div class="action-icon">
+              <i class="fas fa-user-cog"></i>
+            </div>
+            <div class="action-content">
+              <h6 class="action-title">Profile</h6>
+              <p class="action-desc">Account settings</p>
+            </div>
+            <i class="fas fa-arrow-right action-arrow"></i>
           </a>
         </div>
       </div>
@@ -516,6 +644,11 @@
         "Organic and Premium": "success",
       };
 
+      // Update category statistics
+      document.getElementById("categoryCount").textContent = categories.length;
+      document.getElementById("totalProducts").textContent = products.length;
+      document.getElementById("categoryStats").style.display = "block";
+
       // Create category cards
       categories.forEach((category) => {
         const productsInCategory = products.filter(
@@ -532,19 +665,20 @@
           <div class="card category-card h-100" style="cursor: pointer;" onclick="goToCategory('${category}')">
             ${
               image
-                ? `<img src="${image}" alt="${category}" class="card-img-top category-full-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-                   <div class="fallback-icon text-center py-4" style="display:none;">
-                     <i class="${icon} fa-3x text-${color}"></i>
+                ? `<img src="${image}" alt="${category}" class="card-img-top category-full-image" 
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                   <div class="fallback-icon" style="display:none;">
+                     <i class="${icon} fa-3x text-white"></i>
                    </div>`
-                : `<div class="fallback-icon text-center py-4">
-                     <i class="${icon} fa-3x text-${color}"></i>
+                : `<div class="fallback-icon">
+                     <i class="${icon} fa-3x text-white"></i>
                    </div>`
             }
-            <div class="card-body text-center">
+            <div class="card-body">
               <h5 class="card-title">${category}</h5>
-              <p class="card-text text-muted">${
+              <p class="card-text">${
                 productsInCategory.length
-              } items available</p>
+              } item${productsInCategory.length !== 1 ? 's' : ''} available</p>
             </div>
           </div>
         `;
@@ -557,8 +691,21 @@
       animateCategoryCards();
     } catch (error) {
       console.error("Error loading categories:", error);
-      document.getElementById("categoriesGrid").innerHTML =
-        "<div class='col-12 text-center'><div class='alert alert-danger'><i class='fas fa-exclamation-triangle me-2'></i>Error loading categories. Please try again later.</div></div>";
+      const grid = document.getElementById("categoriesGrid");
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+          <div class="alert alert-danger" style="display: inline-block; max-width: 400px;">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Unable to load categories</strong><br>
+            <small>Please check your connection and try again</small>
+            <div class="mt-2">
+              <button class="btn btn-sm btn-outline-danger" onclick="loadCategories()">
+                <i class="fas fa-redo me-1"></i>Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 
@@ -567,26 +714,41 @@
     const categoryCards = document.querySelectorAll(".category-card");
 
     categoryCards.forEach((card, index) => {
-      // Set initial state for animation without opacity issues
-      card.style.transform = "translateY(20px) scale(0.95)";
+      // Set initial state for animation
+      card.style.transform = "translateY(30px) scale(0.9)";
+      card.style.opacity = "0";
       card.style.transition = "none";
 
       setTimeout(() => {
-        card.style.transition = "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+        card.style.transition = "all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
         card.style.transform = "translateY(0) scale(1)";
-      }, index * 80);
+        card.style.opacity = "1";
+      }, index * 100 + 200);
     });
   }
 
   // Function to navigate to category page with loading effect
   function goToCategory(category) {
+    const card = event.currentTarget;
+    
     // Add loading effect to clicked card
-    event.currentTarget.style.transform = "scale(0.95)";
-    event.currentTarget.style.transition = "transform 0.2s ease";
+    card.style.transform = "scale(0.95)";
+    card.style.transition = "transform 0.2s ease";
+    card.style.opacity = "0.7";
+    
+    // Add loading spinner to the card
+    const cardBody = card.querySelector('.card-body');
+    const originalContent = cardBody.innerHTML;
+    cardBody.innerHTML = `
+      <div class="text-center">
+        <i class="fas fa-spinner fa-spin text-primary mb-2"></i>
+        <div style="font-size: 0.8rem; color: #6c757d;">Loading...</div>
+      </div>
+    `;
 
     setTimeout(() => {
       window.location.href = `/category/${encodeURIComponent(category)}`;
-    }, 200);
+    }, 300);
   }
 
   // Function to show loading shimmer effect
@@ -594,16 +756,23 @@
     const grid = document.getElementById("categoriesGrid");
     grid.innerHTML = "";
 
-    for (let i = 0; i < 8; i++) {
+    // Create 12 shimmer cards to represent typical categories
+    for (let i = 0; i < 12; i++) {
       const shimmerCard = document.createElement("div");
-      shimmerCard.className = "col-sm-6 col-md-4 col-lg-3 mb-4";
+      shimmerCard.style.cssText = `
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+      `;
       shimmerCard.innerHTML = `
-        <div class="card category-card">
-          <div class="loading-shimmer" style="height: 160px; border-radius: 12px 12px 0 0;"></div>
-          <div class="card-body">
-            <div class="loading-shimmer" style="height: 18px; width: 70%; margin-bottom: 8px; border-radius: 4px;"></div>
-            <div class="loading-shimmer" style="height: 14px; width: 50%; border-radius: 4px;"></div>
-          </div>
+        <div class="loading-shimmer" style="height: 140px; border-radius: 16px 16px 0 0;"></div>
+        <div style="padding: 1.2rem 1rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; text-align: center;">
+          <div class="loading-shimmer" style="height: 16px; width: 70%; margin: 0 auto 8px; border-radius: 4px;"></div>
+          <div class="loading-shimmer" style="height: 12px; width: 50%; margin: 0 auto; border-radius: 4px;"></div>
         </div>
       `;
       grid.appendChild(shimmerCard);
