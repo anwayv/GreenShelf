@@ -23,14 +23,17 @@
         <div class="category-header">
           <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h2 class="mb-2">
-                  <i class="fas fa-shopping-basket me-3"></i>{{ category }}
-                </h2>
-                <p class="mb-0 opacity-75">
-                  <i class="fas fa-clock me-2"></i>Fresh products delivered in
-                  14 minutes
-                </p>
+              <div class="d-flex align-items-center">
+                <div class="category-image-wrapper me-4">
+                  <img id="categoryHeaderImage" src="" alt="{{ category }}" class="category-header-image" />
+                </div>
+                <div>
+                  <h2 class="mb-2">{{ category }}</h2>
+                  <p class="mb-0 opacity-75">
+                    <i class="fas fa-clock me-2"></i>Fresh products delivered in
+                    14 minutes
+                  </p>
+                </div>
               </div>
               <div class="cart-info">
                 <span class="badge fs-6"
@@ -122,6 +125,12 @@
   async function loadCategoryProducts() {
     try {
       showLoading(true);
+      
+      // Set category header image
+      const categoryImage = document.getElementById('categoryHeaderImage');
+      const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '%20');
+      categoryImage.src = `/static/images/categories/${categorySlug}.png`;
+      
       const response = await fetch("/static/products.json");
       const products = await response.json();
 
@@ -185,10 +194,29 @@
         ? allCategoryProducts.length
         : allCategoryProducts.filter((p) => p.subcategory === value).length;
 
+    // Get subcategory image path
+    const getSubcategoryImage = (subcategory, category) => {
+      if (subcategory === "all") {
+        return `/static/images/categories/${category.toLowerCase()}.png`;
+      }
+      
+      const categorySlug = category.toLowerCase().replace(/\s+/g, '-').replace(/[&,]/g, '');
+      const subcategorySlug = subcategory.toLowerCase().replace(/\s+/g, '-').replace(/[&,]/g, '');
+      return `/static/images/subcategories/${categorySlug}/${subcategorySlug}.jpg`;
+    };
+
+    const subcategoryImage = getSubcategoryImage(value === "all" ? categoryName : value, categoryName);
+
     item.innerHTML = `
       <div class="subcategory-link">
-        <span class="subcategory-name">${displayName}</span>
-        <span class="subcategory-count">(${productsInSubcategory})</span>
+        <div class="subcategory-image-wrapper">
+          <img src="${subcategoryImage}" alt="${displayName}" class="subcategory-image" 
+               onerror="this.src='/static/images/placeholder.jpg'" />
+        </div>
+        <div class="subcategory-info">
+          <span class="subcategory-name">${displayName}</span>
+          <span class="subcategory-count">(${productsInSubcategory})</span>
+        </div>
       </div>
     `;
 

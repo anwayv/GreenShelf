@@ -60,6 +60,42 @@
     "subcategory": "Cereals"
   },
   {
+    "id": 33,
+    "name": "Amul Processed Cheese",
+    "size": "200 g",
+    "price": 120,
+    "oldPrice": 135,
+    "delivery": "14 MINS",
+    "image": "/static/images/cheese.jpg",
+    "discount": "11% OFF",
+    "category": "Dairy and Breakfast",
+    "subcategory": "Butter & Cheese"
+  },
+  {
+    "id": 34,
+    "name": "Quaker Oats",
+    "size": "1 kg",
+    "price": 210,
+    "oldPrice": 230,
+    "delivery": "14 MINS",
+    "image": "/static/images/oats.jpg",
+    "discount": "9% OFF",
+    "category": "Dairy and Breakfast",
+    "subcategory": "Cereals"
+  },
+  {
+    "id": 35,
+    "name": "Amul Fresh Yogurt",
+    "size": "400 g",
+    "price": 45,
+    "oldPrice": null,
+    "delivery": "14 MINS",
+    "image": "/static/images/yogurt.jpg",
+    "discount": null,
+    "category": "Dairy and Breakfast",
+    "subcategory": "Milk"
+  },
+  {
     "id": 6,
     "name": "Fresh Bananas",
     "size": "1 kg",
