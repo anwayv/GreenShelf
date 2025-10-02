@@ -111,7 +111,29 @@
                 <td class="quantity-cell">
                   <span class="quantity-value">{{ item.quantity }}</span>
                 </td>
-                <td class="threshold-cell">{{ item.threshold }}</td>
+                <td class="threshold-cell">
+                  <div class="threshold-controls">
+                    <form action="{{ url_for('main.adjust_item_threshold') }}" method="POST" class="d-inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <input type="hidden" name="item_id" value="{{ item.id }}" />
+                      <input type="hidden" name="delta" value="-1" />
+                      <button type="submit" class="quantity-btn decrease" title="Decrease threshold">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                    </form>
+
+                    <span class="threshold-value">{{ item.threshold }}</span>
+
+                    <form action="{{ url_for('main.adjust_item_threshold') }}" method="POST" class="d-inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <input type="hidden" name="item_id" value="{{ item.id }}" />
+                      <input type="hidden" name="delta" value="1" />
+                      <button type="submit" class="quantity-btn increase" title="Increase threshold">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
                 <td class="unit-cell">{{ item.unit }}</td>
                 <td class="category-cell">
                   <span class="category-badge">{{ item.category or 'Uncategorized' }}</span>

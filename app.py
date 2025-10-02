@@ -72,7 +72,7 @@ def run_selenium_bot(grocery_list, headless=False):
     options.add_argument("--start-maximized")
 
     # Use clean Chrome automation profile
-    options.add_argument(r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile")
+    options.add_argument(r"--user-data-dir=C:\\Users\\HP\\SeleniumProfile")
     options.add_argument(r"--profile-directory=Automation")
 
     if headless:

@@ -428,6 +428,22 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+/* Threshold control styles */
+.threshold-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.threshold-value {
+  min-width: 26px;
+  text-align: center;
+  display: inline-block;
+  font-weight: 600;
+  color: #374151;
+}
   padding: 0.75rem 1rem;
   border-radius: 10px;
   text-decoration: none;
@@ -940,6 +956,38 @@ body {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+/* Normalize payment input and related controls height/alignment */
+.payment-input,
+.input-group .input-group-text {
+  height: 44px;
+  min-height: 44px;
+  line-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.input-group .input-group-text {
+  border-radius: 8px 0 0 8px;
+}
+
+.payment-input {
+  border-radius: 0 8px 8px 0;
+  padding-left: 12px;
+}
+
+.setting-checkbox,
+.checkbox-custom,
+.checkbox-input + .checkbox-label .checkbox-custom {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.setting-control {
+  align-items: center;
 }
 
 /* Quick Actions Grid */
@@ -3691,6 +3739,30 @@ body {
   margin-top: 2rem;
 }
 
+/* Registration-specific form icon alignment fixes */
+.registration-form .input-group {
+  align-items: center; /* ensure container centers children */
+  position: relative;
+}
+
+.registration-form .input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  z-index: 3;
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+.registration-form .modern-input {
+  height: 48px;
+  padding: 0 15px 0 45px; /* leave space for icon */
+  box-sizing: border-box;
+  display: block;
+}
+
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -3736,8 +3808,8 @@ body {
   transform: translateY(-2px);
 }
 
-.modern-input:focus + .input-icon,
-.modern-input:not(:placeholder-shown) + .input-icon {
+.input-group:focus-within .input-icon,
+.input-group .modern-input:not(:placeholder-shown) ~ .input-icon {
   color: #667eea;
 }
 

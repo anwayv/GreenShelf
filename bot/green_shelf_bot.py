@@ -19,44 +19,36 @@ class GreenShelfBot:
         self.user_id = user_id
         self.options = Options()
         
-        # Enhanced Chrome options for better reliability and crash prevention
-        self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--no-sandbox") 
+        # Reasonable Chrome options for reliability
+        # Keep JavaScript, images, and renderer functionality enabled so target sites work correctly.
+        self.options.add_argument("--no-sandbox")
         self.options.add_argument("--disable-dev-shm-usage")
         self.options.add_argument("--disable-extensions")
-        self.options.add_argument("--disable-plugins")
-        self.options.add_argument("--disable-images")
-        self.options.add_argument("--disable-javascript")
         self.options.add_argument("--disable-notifications")
         self.options.add_argument("--disable-popup-blocking")
-        self.options.add_argument("--disable-translate")
-        self.options.add_argument("--disable-logging")
-        self.options.add_argument("--disable-background-timer-throttling")
-        self.options.add_argument("--disable-backgrounding-occluded-windows")
-        self.options.add_argument("--disable-renderer-backgrounding")
-        self.options.add_argument("--disable-features=TranslateUI")
-        self.options.add_argument("--disable-ipc-flooding-protection")
         self.options.add_argument("--window-size=1280,900")
-        self.options.add_argument("--start-maximized")
-        self.options.add_argument("--remote-debugging-port=9222")
-        
-        # Memory and performance optimizations
-        self.options.add_argument("--max_old_space_size=4096")
-        self.options.add_argument("--memory-pressure-off")
-        
-        # User agent to avoid detection
-        self.options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        
-        # Headless mode configuration
+        # Optional: start maximized when running with a visible browser
+        if not Config.HEADLESS:
+            self.options.add_argument("--start-maximized")
+
+        # User agent to reduce simple bot-detection heuristics
+        self.options.add_argument(
+            "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+
+        # Headless mode configuration (use new headless if requested)
         if Config.HEADLESS:
+            # Use the newer headless mode where available
             self.options.add_argument("--headless=new")
             self.options.add_argument("--disable-software-rasterizer")
-        
-        # Disable logging and crash reporting
+
+        # Reduce noisy logs from the browser
         self.options.add_argument("--log-level=3")
-        self.options.add_argument("--silent")
         self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
         self.options.add_experimental_option('useAutomationExtension', False)
+        # Make automation less obvious
+        self.options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        self.options.add_argument('--disable-blink-features=AutomationControlled')
         
         try:
             # Use webdriver-manager to automatically handle ChromeDriver

@@ -45,7 +45,7 @@ def create_enhanced_chrome_driver(headless=False):
     options.add_argument("--log-level=3")
     
     # User data for session persistence
-    options.add_argument(r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile")
+    options.add_argument(r"--user-data-dir=C:\\Users\\HP\\SeleniumProfile")
     options.add_argument(r"--profile-directory=Automation")
     
     # Anti-detection measures

@@ -28,16 +28,12 @@ def test_chrome_driver():
     print("\n🔧 Testing Chrome WebDriver Setup...")
     
     options = Options()
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox") 
+    options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-notifications")
     options.add_argument("--start-maximized")
     options.add_argument("--log-level=3")
-    
-    # Test with headless mode first
-    options.add_argument("--headless=new")
     
     driver = None
     try:
@@ -119,8 +115,7 @@ def test_specific_blinkit_selectors():
     print("\n🎯 Testing Blinkit-specific selectors...")
     
     options = Options()
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox") 
+    options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     # Run in visible mode for this test
     options.add_argument("--start-maximized")

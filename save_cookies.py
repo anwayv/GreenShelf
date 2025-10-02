@@ -6,7 +6,7 @@ options = webdriver.ChromeOptions()
 options.add_argument("--start-maximized")
 
 # Use a clean custom profile (no lock conflicts)
-options.add_argument(r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile")
+options.add_argument(r"--user-data-dir=C:\\Users\\HP\\SeleniumProfile")
 options.add_argument(r"--profile-directory=Automation")
 
 driver = webdriver.Chrome(options=options)

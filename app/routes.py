@@ -25,26 +25,18 @@ def create_chrome_driver(custom_options=None, headless=False):
     """Helper function to create Chrome driver with enhanced error handling"""
     options = Options()
     
-    # Enhanced Chrome options for better reliability
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox") 
+    # Reasonable Chrome options for reliability
+    options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-extensions")
-    options.add_argument("--disable-plugins")
     options.add_argument("--disable-notifications")
     options.add_argument("--disable-popup-blocking")
-    options.add_argument("--disable-translate")
-    options.add_argument("--disable-logging")
-    options.add_argument("--disable-background-timer-throttling")
-    options.add_argument("--disable-backgrounding-occluded-windows")  
-    options.add_argument("--disable-renderer-backgrounding")
-    options.add_argument("--disable-features=TranslateUI")
-    options.add_argument("--remote-debugging-port=9222")
-    options.add_argument("--start-maximized")
+    options.add_argument("--window-size=1280,900")
     options.add_argument("--log-level=3")
-    options.add_argument("--silent")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_experimental_option('useAutomationExtension', False)
+    options.add_experimental_option('excludeSwitches', ['enable-automation'])
+    options.add_argument('--disable-blink-features=AutomationControlled')
     
     # Add custom options if provided
     if custom_options:
@@ -218,6 +210,38 @@ def adjust_item_quantity():
     return redirect(url_for("main.index"))
 
 
+@main.route("/inventory/adjust_threshold", methods=["POST"])
+@login_required
+def adjust_item_threshold():
+    item_id = request.form.get("item_id")
+    delta = request.form.get("delta")
+
+    if not item_id:
+        flash("Item ID is required", "error")
+        return redirect(url_for("main.index"))
+
+    try:
+        delta_val = float(delta or 0)
+    except ValueError:
+        flash("Invalid threshold adjustment", "error")
+        return redirect(url_for("main.index"))
+
+    item = InventoryItem.query.filter_by(
+        id=item_id,
+        user_id=current_user.id
+    ).first()
+
+    if not item:
+        flash("Item not found", "error")
+        return redirect(url_for("main.index"))
+
+    new_threshold = max(item.threshold + delta_val, 0)
+    item.threshold = new_threshold
+    db.session.commit()
+    flash("Threshold updated", "success")
+    return redirect(url_for("main.index"))
+
+
 @main.route("/check-low")
 @login_required
 def check_low():
@@ -346,7 +370,7 @@ def save_cookies():
     try:
         # Start Chrome browser for manual login using enhanced driver
         custom_options = [
-            r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile",
+            r"--user-data-dir=C:\\Users\\HP\\SeleniumProfile",
             r"--profile-directory=Automation"
         ]
         
@@ -495,7 +519,7 @@ def run_grocery_ordering(grocery_list, headless_mode, cookies_file, upi_id):
     
     # Use enhanced Chrome driver with profile options
     custom_options = [
-        r"--user-data-dir=C:\\Users\\ranve\\SeleniumProfile",
+        r"--user-data-dir=C:\\Users\\HP\\SeleniumProfile",
         r"--profile-directory=Automation"
     ]
     

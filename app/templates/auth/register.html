@@ -23,10 +23,9 @@
               <div class="form-group">
                 <div class="input-group">
                   <span class="input-icon">
-                    <i class="fas fa-user"></i>
+                    <i class="fas fa-user-circle"></i>
                   </span>
-                  {{ form.username(class="modern-input", placeholder="Username")
-                  }}
+                  {{ form.username(class="modern-input", placeholder="Enter your username") }}
                 </div>
                 {% if form.username.errors %}
                 <div class="error-message">
@@ -40,8 +39,7 @@
                   <span class="input-icon">
                     <i class="fas fa-envelope"></i>
                   </span>
-                  {{ form.email(class="modern-input", placeholder="Email
-                  Address") }}
+                  {{ form.email(class="modern-input", placeholder="Enter your email address") }}
                 </div>
                 {% if form.email.errors %}
                 <div class="error-message">
@@ -53,10 +51,9 @@
               <div class="form-group">
                 <div class="input-group">
                   <span class="input-icon">
-                    <i class="fas fa-lock"></i>
+                    <i class="fas fa-key"></i>
                   </span>
-                  {{ form.password(class="modern-input", placeholder="Password")
-                  }}
+                  {{ form.password(class="modern-input", placeholder="Create a password") }}
                 </div>
                 {% if form.password.errors %}
                 <div class="error-message">
@@ -68,10 +65,9 @@
               <div class="form-group">
                 <div class="input-group">
                   <span class="input-icon">
-                    <i class="fas fa-lock"></i>
+                    <i class="fas fa-shield-alt"></i>
                   </span>
-                  {{ form.password2(class="modern-input", placeholder="Confirm
-                  Password") }}
+                  {{ form.password2(class="modern-input", placeholder="Confirm your password") }}
                 </div>
                 {% if form.password2.errors %}
                 <div class="error-message">
@@ -85,10 +81,10 @@
                 <div class="form-group half-width">
                   <div class="input-group">
                     <span class="input-icon">
-                      <i class="fas fa-users"></i>
+                      <i class="fas fa-home"></i>
                     </span>
                     {{ form.family_size(class="modern-input",
-                    placeholder="Family Size") }}
+                    placeholder="Enter household size") }}
                   </div>
                   {% if form.family_size.errors %}
                   <div class="error-message">
