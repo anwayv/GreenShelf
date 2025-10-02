@@ -281,11 +281,14 @@ def order_low_items():
         return redirect(url_for("main.index"))
 
     try:
-        bot = GreenShelfBot(upi_id, user_id=current_user.id)
+        # Use headless flag to control Selenium headless operation
+        headless_flag = request.form.get('headless') == '1' or request.form.get('headless') == 'on'
+        bot = GreenShelfBot(upi_id, user_id=current_user.id, headless=headless_flag)
         result = bot.process_items(to_order)
         
         if do_checkout:
             try:
+                # Attempt checkout and UPI flow
                 checkout_msgs = bot.proceed_to_checkout_and_select_upi(upi_id)
                 result.extend(checkout_msgs)
             except Exception as e:

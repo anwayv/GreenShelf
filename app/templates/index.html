@@ -330,18 +330,60 @@
           </div>
           
           <div class="form-group">
-            <button
-              type="submit"
-              class="order-button {{ 'disabled' if not low_items else '' }}"
-              {{ 'disabled' if not low_items else '' }}
-            >
-              <i class="fas fa-shopping-cart me-2"></i>
-              <span>Prepare Cart on Blinkit</span>
-              {% if low_items %}
-              <div class="button-badge">{{ low_items|length }}</div>
-              {% endif %}
-            </button>
+            <div class="custom-checkbox">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="headless_toggle"
+                name="headless"
+                value="1"
+              />
+              <label class="checkbox-label" for="headless_toggle">
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">Run in background (headless browser)</span>
+              </label>
+            </div>
+            <small class="form-text text-muted">Enable to run Blinkit automation in headless mode (runs without opening a visible browser).</small>
+
+            <div style="margin-top:12px;">
+              <button
+                type="submit"
+                class="order-button {{ 'disabled' if not low_items else '' }}"
+                {{ 'disabled' if not low_items else '' }}
+              >
+                <i class="fas fa-shopping-cart me-2"></i>
+                <span>Prepare Cart on Blinkit</span>
+                {% if low_items %}
+                <div class="button-badge">{{ low_items|length }}</div>
+                {% endif %}
+              </button>
+            </div>
           </div>
+
+          <!-- Overlay shown after form submission to indicate work in progress -->
+          <div id="orderOverlay" class="order-overlay" style="display:none;">
+            <div class="order-overlay-content">
+              <div class="spinner" aria-hidden="true"></div>
+              <p style="margin:0;">Order is being prepared on Blinkit. You'll be notified when complete. If you enabled checkout, check your UPI app for payment approval.</p>
+            </div>
+          </div>
+
+          <script>
+            (function(){
+              var form = document.querySelector('.order-form');
+              if (!form) return;
+              form.addEventListener('submit', function(e){
+                try {
+                  var btn = this.querySelector('button[type="submit"]');
+                  if (btn) btn.disabled = true;
+                  var overlay = document.getElementById('orderOverlay');
+                  if (overlay) overlay.style.display = 'flex';
+                } catch (err) {
+                  // ignore front-end errors; server will still process
+                }
+              });
+            })();
+          </script>
         </form>
       </div>
     </div>

@@ -14,9 +14,14 @@ from pathlib import Path
 from datetime import datetime
 
 class GreenShelfBot:
-    def __init__(self, upi_id, user_id=None):
+    def __init__(self, upi_id, user_id=None, headless=False):
+        """Initialize bot.
+
+        headless: if True, run Chrome in headless mode regardless of Config.HEADLESS
+        """
         self.upi_id = upi_id
         self.user_id = user_id
+        self.headless = headless
         self.options = Options()
         
         # Reasonable Chrome options for reliability
@@ -28,7 +33,7 @@ class GreenShelfBot:
         self.options.add_argument("--disable-popup-blocking")
         self.options.add_argument("--window-size=1280,900")
         # Optional: start maximized when running with a visible browser
-        if not Config.HEADLESS:
+        if not (self.headless or Config.HEADLESS):
             self.options.add_argument("--start-maximized")
 
         # User agent to reduce simple bot-detection heuristics
@@ -37,7 +42,7 @@ class GreenShelfBot:
         )
 
         # Headless mode configuration (use new headless if requested)
-        if Config.HEADLESS:
+        if self.headless or Config.HEADLESS:
             # Use the newer headless mode where available
             self.options.add_argument("--headless=new")
             self.options.add_argument("--disable-software-rasterizer")
@@ -150,7 +155,11 @@ class GreenShelfBot:
         except Exception as e:
             logging.warning(f"Location step skipped: {e}")
 
-    def process_items(self, items):
+    def process_items(self, items, keep_browser: bool = False):
+        """Add items to cart.
+
+        keep_browser: when True, do not quit the browser at the end so caller can proceed to checkout.
+        """
         results = []
         try:
             self._set_location_if_needed()
@@ -242,11 +251,16 @@ class GreenShelfBot:
                     snap = self._save_debug(f"error_{item}")
                     results.append(f"❌ Failed to add {item}: {str(item_error)[:120]} (see {snap})")
         finally:
-            self.cleanup()
+            # Only cleanup the browser if caller did not request to keep it open
+            if not keep_browser:
+                self.cleanup()
         return results
 
     def proceed_to_checkout_and_select_upi(self, upi_id: str):
         msgs = []
+        # Ensure driver is available
+        if not hasattr(self, 'driver') or self.driver is None:
+            return ["Checkout flow skipped: browser not available"]
         try:
             # Go to cart
             self.driver.get("https://www.blinkit.com/cart")
