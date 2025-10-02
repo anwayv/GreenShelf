@@ -75,6 +75,88 @@
     {% endfor %}
 </div>
 
+<!-- Indian Recipes Section -->
+<div class="mb-5">
+    <h4 class="mb-3"><i class="fas fa-pepper-hot me-2"></i>Indian Recipes</h4>
+    <div class="row g-4 indian-recipes">
+        <!-- Recipe: Paneer Butter Masala -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card recipe-card h-100">
+                <img src="{{ url_for('static', filename='images/recipes/paneer_butter_masala.svg') }}" class="card-img-top recipe-img" alt="Paneer Butter Masala">
+                <div class="card-body">
+                    <h5 class="card-title">Paneer Butter Masala</h5>
+                    <p class="card-text small text-muted">Rich, creamy tomato-based curry with soft paneer cubes. Serves 3-4.</p>
+                    <h6>Ingredients</h6>
+                    <ul class="small">
+                        <li>250g paneer, cubed</li>
+                        <li>3 large tomatoes, pureed</li>
+                        <li>1 onion, finely chopped</li>
+                        <li>2 tbsp butter, 1 tbsp cream</li>
+                        <li>1 tsp ginger-garlic paste, spices</li>
+                    </ul>
+                    <h6>Procedure</h6>
+                    <ol class="small">
+                        <li>Sauté onions until golden. Add ginger-garlic paste.</li>
+                        <li>Add tomato puree and simmer with spices until oil separates.</li>
+                        <li>Add paneer cubes and simmer in buttery tomato gravy.</li>
+                        <li>Finish with cream and garnish with kasuri methi.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recipe: Aloo Gobi -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card recipe-card h-100">
+                <img src="{{ url_for('static', filename='images/recipes/aloo_gobi.svg') }}" class="card-img-top recipe-img" alt="Aloo Gobi">
+                <div class="card-body">
+                    <h5 class="card-title">Aloo Gobi</h5>
+                    <p class="card-text small text-muted">Classic dry curry of potatoes and cauliflower. Serves 3.</p>
+                    <h6>Ingredients</h6>
+                    <ul class="small">
+                        <li>3 potatoes, cubed</li>
+                        <li>1 small cauliflower, florets</li>
+                        <li>1 onion, chopped</li>
+                        <li>1 tomato, chopped</li>
+                        <li>1 tsp cumin, turmeric, garam masala</li>
+                    </ul>
+                    <h6>Procedure</h6>
+                    <ol class="small">
+                        <li>Heat oil and cumin; add onions and sauté.</li>
+                        <li>Add potatoes and cauliflower, stir with spices.</li>
+                        <li>Cover and cook until vegetables are tender.</li>
+                        <li>Finish with garam masala and fresh coriander.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recipe: Masala Dosa (simple version) -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card recipe-card h-100">
+                <img src="{{ url_for('static', filename='images/recipes/masala_dosa.svg') }}" class="card-img-top recipe-img" alt="Masala Dosa">
+                <div class="card-body">
+                    <h5 class="card-title">Masala Dosa (Quick)</h5>
+                    <p class="card-text small text-muted">Crispy crepe stuffed with mildly spiced potato masala. Serves 2.</p>
+                    <h6>Ingredients</h6>
+                    <ul class="small">
+                        <li>Store-bought dosa batter (or homemade)</li>
+                        <li>3 potatoes, boiled & mashed</li>
+                        <li>1 onion, sliced</li>
+                        <li>Mustard seeds, curry leaves, turmeric</li>
+                    </ul>
+                    <h6>Procedure</h6>
+                    <ol class="small">
+                        <li>Tempering: heat oil, add mustard seeds and curry leaves.</li>
+                        <li>Sauté onions, add mashed potatoes and spices; cook briefly.</li>
+                        <li>Spread batter on hot tawa to make dosa, add potato masala, fold and serve with chutney.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- AI Suggestions Modal -->
 <div class="modal fade" id="suggestionsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">

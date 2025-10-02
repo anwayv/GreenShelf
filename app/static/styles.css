@@ -2531,7 +2531,12 @@ body {
 .subcategory-item.active {
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   border-color: #4f46e5;
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+}
+
+.subcategory-item.active:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+  transform: translateY(-2px);
 }
 
 .subcategory-link {
@@ -3253,21 +3258,15 @@ body {
   right: 0;
   bottom: 0;
   background: radial-gradient(
-      circle at 20% 80%,
+      circle at 30% 70%,
       rgba(255, 255, 255, 0.1) 0%,
       transparent 50%
     ),
     radial-gradient(
-      circle at 80% 20%,
+      circle at 70% 30%,
       rgba(255, 255, 255, 0.05) 0%,
       transparent 50%
-    ),
-    radial-gradient(
-      circle at 40% 40%,
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 50%
     );
-  z-index: 1;
 }
 
 .how-it-works-section .container {
@@ -3797,20 +3796,58 @@ body {
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: white;
+  background: #ffffff;
   color: #1e293b;
 }
 
 .modern-input:focus {
-  outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+  outline: none;
 }
 
-.input-group:focus-within .input-icon,
-.input-group .modern-input:not(:placeholder-shown) ~ .input-icon {
-  color: #667eea;
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-group.half-width {
+  flex: 1;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #64748b;
+  z-index: 3;
+  font-size: 1.1rem;
+}
+
+.modern-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.modern-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+  outline: none;
 }
 
 .error-message {
@@ -3846,10 +3883,6 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 15px 35px rgba(78, 205, 196, 0.4);
   background: linear-gradient(135deg, #44a08d 0%, #4ecdc4 100%);
-}
-
-.registration-btn:active {
-  transform: translateY(-1px);
 }
 
 .registration-footer {
@@ -4347,54 +4380,30 @@ body {
   color: #6c757d;
 }
 
-/* Responsive Design for Profile Page */
-@media (max-width: 768px) {
-  .profile-header {
-    margin: -1rem -15px 0;
-    padding: 1.5rem 1rem;
-  }
-
-  .profile-info {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .profile-badges {
-    justify-content: center;
-  }
-
-  .toggle-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .form-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .input-icon {
-    top: 50px;
-  }
+/* Indian Recipes styling */
+.indian-recipes .recipe-card {
+  border-radius: 12px;
+  overflow: hidden;
 }
-
-@media (max-width: 576px) {
-  .profile-name {
-    font-size: 1.5rem;
-  }
-
-  .profile-avatar {
-    width: 60px;
-    height: 60px;
-  }
-
-  .profile-avatar i {
-    font-size: 2rem;
+.recipe-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #fff7f0;
+}
+.recipe-card .card-body h6 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.recipe-card ul.small {
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+.recipe-card ol.small {
+  padding-left: 1.1rem;
+}
+@media (max-width: 768px) {
+  .recipe-img {
+    height: 140px;
   }
 }
